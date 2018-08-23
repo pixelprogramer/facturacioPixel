@@ -1,0 +1,12 @@
+<ng2-toasty [position]="position"></ng2-toasty>
+<app-card title="Cargar factura de cobro de mes">
+  <div class="row">
+    <div class="col-md-12" style="text-align: center">
+      <h4 class="sub-title">Seleccione una fecha</h4>
+      <ngb-datepicker #dp [(ngModel)]="model" (navigate)="date = $event.next"></ngb-datepicker>
+      <pre>Cargar facturas del mes : {{ parserFormatter.format(model) }}</pre>
+      <button class="btn btnPropio" style="width: 100%" id="btnGenerarReporte" (click)="cargarFactura()">Cargar facturas en la fecha: {{parserFormatter.format(model)}}
+      </button>
+    </div>
+  </div>
+</app-card>

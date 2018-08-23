@@ -1,0 +1,281 @@
+<ng2-toasty [position]="position"></ng2-toasty>
+<app-card [title]="'Usuarios'" id="seccionUsuario">
+  <div class="row">
+    <div class="col-md-12" *ngIf="seleccionUsuario.id_usuario !=''">
+      <h6>Usuario seleccionario</h6>
+      <label>Documento:<strong style="color: red">{{seleccionUsuario.documento_usuario}}</strong> Nombre:
+        <strong style="color: red">{{seleccionUsuario.nombre_usuario}}</strong></label>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btnPropio" id="btnFacturas" (click)="cargarSeccionFactura()"
+              [disabled]="seleccionUsuario.id_usuario == ''">Facturas
+      </button>
+    </div>
+    <div class="col-md-2">
+      <button class="btn btnPropio" id="btnRegistros" [disabled]="seleccionUsuario.id_usuario == ''">
+        Registros
+        facturados
+      </button>
+    </div>
+    <div class="col-sm-12">
+      <div class="col-md-12" style="margin-top: 10px" id="loaderTablaMenu">
+        <div class="align-content-center">
+          <div class="preloader3" style="height: 0px; padding-top: 20px">
+            <div class="circ1 loader-warning"></div>
+            <div class="circ2 loader-warning"></div>
+            <div class="circ3 loader-warning"></div>
+            <div class="circ4 loader-warning"></div>
+          </div>
+        </div>
+      </div>
+      <div class="dataTables_scrollBody"
+           style="position: relative; overflow: auto; max-height: 400px; width: 100%; margin-top: 10px">
+        <table class="table table-striped table-bordered nowrap dataTable" role="grid"
+               aria-describedby="scr-vrt-dt_info" style="width: 100%;">
+          <thead>
+          <tr role="row" style="height: 0px;">
+            <th style="width: 144.45px;">
+              Documento
+            </th>
+            <th style="width: 144.45px;">
+              Nombres
+            </th>
+            <th style="width: 144.45px;">
+              Apellido
+            </th>
+            <th style="width: 70px;">
+              Telefono
+            </th>
+            <th style="width: 70px;">
+              Correo
+            </th>
+            <th style="width: 30px;">
+              Estado
+            </th>
+
+          </tr>
+          </thead>
+
+          <tbody>
+          <tr *ngFor="let usuario of listUsuario" role="row" class="odd Tablas filaTabla"
+              (click)="seleccionarUsuario(usuario)">
+            <td>{{usuario.documento_usuario}}</td>
+            <td>{{usuario.nombre_usuario}}</td>
+            <td>{{usuario.apellido_usuario}}</td>
+            <td>{{usuario.telefono_usuario}}</td>
+            <td>{{usuario.correo_usuario}}</td>
+            <td>{{usuario.estado_usuario}}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</app-card>
+
+<div id="seccionFactura">
+  <app-card [title]="'Factura'">
+    <div class="row">
+      <div class="col-md-12" style="margin-top: 15px">
+        <button class="btn btnPropio" id="btnRegresarUsuarios" (click)="regresarUsuario()" style="height: 22px;padding-top: 2px; float: right">
+          Regresar usuarios
+        </button>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+      <div class="col-md-3">
+        <h4 class="sub-title">Codigo medidor</h4>
+        <input class="form-control" id="apellido" name="codigo_medidor" placeholder="Codigo"
+               #descripcionExamen="ngModel"
+               [ngStyle]="{'border': objFactura.codigo_medidor_factura== '' ? 'red solid 1px' : '#577928 solid 1px'}"
+               [(ngModel)]="objFactura.codigo_medidor_factura">
+      </div>
+      <div class="col-md-3">
+        <h4 class="sub-title">Direccion entrega factura</h4>
+        <input class="form-control" id="Direccion" name="codigo_medidor" placeholder="Direccion"
+               #descripcionExamen="ngModel"
+               [ngStyle]="{'border': objFactura.direccion_factura== '' ? 'red solid 1px' : '#577928 solid 1px'}"
+               [(ngModel)]="objFactura.direccion_factura">
+      </div>
+      <div class="col-md-3">
+        <h4 class="sub-title">Numero de tapa</h4>
+        <input class="form-control" id="tapa" name="codigo_medidor" placeholder="Tapa"
+               #descripcionExamen="ngModel"
+               [ngStyle]="{'border': objFactura.direccion_factura== '' ? 'red solid 1px' : '#577928 solid 1px'}"
+               [(ngModel)]="objFactura.numero_tapa_factura">
+      </div>
+      <div class="col-sm-2 col-md-3">
+        <h4 class="sub-title">Estado</h4>
+        <select class="form-control"
+                [ngStyle]="{'border': objFactura.estado_factura == '000' ? 'red solid 1px' : '#577928 solid 1px'}"
+                [(ngModel)]="objFactura.estado_factura">
+          <option value="000">Seleccione</option>
+          <option value="ACTIVO">Activo</option>
+          <option value="CANCELADO">Cancelado</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 10px">
+      <div class="col-md-12">
+        <h4 class="sub-title">Estado</h4>
+        <input class="form-control" style="width: 100%; height: 50px" type="text" #observacion="ngModel"
+               [ngStyle]="{'border': objFactura.observacion_factura == '' ? 'red solid 1px' : '#577928 solid 1px'}"
+               [(ngModel)]="objFactura.observacion_factura">
+      </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+      <div class="col-md-12">
+        <button class="btn btnPropio" style="height: 22px;width: 100%; padding-top: 2px;" id="btnCrearFactura" (click)="crearFactura()">Crear
+          factura
+        </button>
+      </div>
+      <div class="col-md-12" style="margin-top: 5px">
+        <button class="btn btnPropio" id="btnActualizarFactura" (click)="actualizarFactura()"
+                style="height: 22px;width: 100%; padding-top: 2px;">
+          Actualizar factura
+        </button>
+      </div>
+    </div>
+  </app-card>
+
+  <app-card title="Facturas del usuario {{seleccionUsuario.nombre_usuario}} {{seleccionUsuario.apellido_usuario}}">
+
+    <div class="row">
+      <div class="col-md-1">
+        <button class="btn btnPropio" id="btn" (click)="cargarSeccionTarifaFactura()"
+                [disabled]="objFactura.id_factura == ''">Tarifas de factura con codigo: {{objFactura.id_factura}}
+        </button>
+      </div>
+    </div>
+
+    <div class="dataTables_scrollBody"
+         style="position: relative; overflow: auto; max-height: 400px; width: 100%; margin-top: 10px">
+      <table class="table table-striped table-bordered nowrap dataTable" role="grid"
+             aria-describedby="scr-vrt-dt_info" style="width: 100%;">
+        <thead>
+        <tr role="row" style="height: 0px;">
+          <th style="width: 144.45px;">
+            Codigo
+          </th>
+          <th style="width: 144.45px;">
+            Codigo medidor
+          </th>
+          <th style="width: 70px;">
+            Direccion de envio
+          </th>
+          <th style="width: 144.45px;">
+            Numero de tapa
+          </th>
+
+          <th style="width: 70px;">
+            Observacion
+          </th>
+          <th style="width: 70px;">
+            Estado
+          </th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr *ngFor="let factura of listFactura" role="row" class="odd Tablas filaTabla"
+            (click)="seleccionarFactura(factura)">
+          <td>{{factura.id_factura}}</td>
+          <td>{{factura.codigo_medidor_factura}}</td>
+          <td>{{factura.direccion_factura}}</td>
+          <td>{{factura.numero_tapa_factura}}</td>
+          <td>{{factura.observacion_factura}}</td>
+          <td><span
+            [class]="factura.estado_factura == 'CANCELADO' ? 'pcoded-badge label label-danger' : 'pcoded-badge label label-success'"
+          >{{factura.estado_factura}}</span></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+</div>
+
+<div id="idSeccionTarifa">
+  <app-card title="Tarifas de la factura con codigo: {{objFactura.id_factura}}">
+    <div class="row">
+      <div class="col-md-12" style="margin-top: 5px">
+        <button class="btn btnPropio" id="btnRegresarPedido" (click)="regresarPedido()" style="height: 22px;padding-top: 2px; float: right">
+          Regresar facturas
+        </button>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+      <div class="col-md-4">
+        <h4 class="sub-title">Descripcion de la tarifa</h4>
+        <input class="form-control" id="descripcion_tarifa" name="descripcion_tarifa" placeholder="Descripcion"
+               #descripcionExamen="ngModel"
+               [ngStyle]="{'border': objTarifaFactura.descripcion_tarifa== '' ? 'red solid 1px' : '#577928 solid 1px'}"
+               [(ngModel)]="objTarifaFactura.descripcion_tarifa">
+      </div>
+      <div class="col-md-4">
+        <h4 class="sub-title">Costo total de la tarifa</h4>
+        <input class="form-control" id="costo_tarifa" name="costo_tarifa" placeholder="Costo"
+               #descripcionExamen="ngModel"
+               [ngStyle]="{'border': objTarifaFactura.total_tarifa== '' ? 'red solid 1px' : '#577928 solid 1px'}"
+               [(ngModel)]="objTarifaFactura.total_tarifa">
+      </div>
+      <div class="col-sm-2 col-md-4">
+        <h4 class="sub-title">Estado</h4>
+        <select class="form-control"
+                [ngStyle]="{'border': objTarifaFactura.estado_tarifa == '000' ? 'red solid 1px' : '#577928 solid 1px'}"
+                [(ngModel)]="objTarifaFactura.estado_tarifa">
+          <option value="000">Seleccione</option>
+          <option value="ACTIVO">Activo</option>
+          <option value="INACTIVO">Inactivo</option>
+        </select>
+      </div>
+    </div>
+    <div class="row" style="margin-top: 5px">
+      <div class="col-md-12">
+        <button class="btn btnPropio" style="height: 22px;width: 100%; padding-top: 2px;" id="btnCrearTarifa" (click)="crearTarifa()">Crear tarifa
+        </button>
+      </div>
+      <div class="col-md-12" style="margin-top: 5px">
+        <button class="btn btnPropio" id="btnActualizarTarifa" (click)="actualizarTarifa()" style="height: 22px;width: 100%; padding-top: 2px;">
+          Actualizar tarifa
+        </button>
+      </div>
+    </div>
+  </app-card>
+  <app-card title="Lista de tarifas">
+    <div class="dataTables_scrollBody"
+         style="position: relative; overflow: auto; max-height: 400px; width: 100%; margin-top: 10px">
+      <table class="table table-striped table-bordered nowrap dataTable" role="grid"
+             aria-describedby="scr-vrt-dt_info" style="width: 100%;">
+        <thead>
+        <tr role="row" style="height: 0px;">
+          <th style="width: 144.45px;">
+            Codigo
+          </th>
+          <th style="width: 144.45px;">
+            Descripcion
+          </th>
+          <th style="width: 70px;">
+            Total tarifa
+          </th>
+          <th style="width: 144.45px;">
+            Estado tarifa
+          </th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr *ngFor="let tarifa of listTarifasFactura" role="row" class="odd Tablas filaTabla"
+            (click)="seleccionarTarifa(tarifa)">
+          <td>{{tarifa.id_tarifa}}</td>
+          <td>{{tarifa.descripcion_tarifa}}</td>
+          <td>{{tarifa.total_tarifa}}</td>
+          <td><span
+            [class]="tarifa.estado_tarifa == 'INACTIVO' ? 'pcoded-badge label label-danger' : 'pcoded-badge label label-success'"
+          >{{tarifa.estado_tarifa}}</span></td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+  </app-card>
+</div>
+
