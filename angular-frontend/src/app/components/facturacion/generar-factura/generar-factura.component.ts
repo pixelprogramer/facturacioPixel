@@ -26,13 +26,15 @@ export class GenerarFacturaComponent implements OnInit {
     this._ElementService.pi_poValidarUsuario('GenerarFacturaComponent');
   }
   generarFacturas(){
+    this.urlFile=GLOBAL.urlFiles;
     this._FacturaService.generarFactura(this.token).subscribe(
       respuesta=>{
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success'){
           this.urlFile += respuesta.data;
-          console.log(this.urlFile);
-          this.validacion = '1';
+          let frame = '<iframe src="'+this.urlFile+'"style="width:100%; height:1200px;" frameborder="0"></iframe>';
+          $("#seccioPdf").html(frame);
+
         }else {
           this._ElementService.pi_poVentanaAlertaWarning('PIXEL',respuesta.msg);
         }

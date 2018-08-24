@@ -5,11 +5,12 @@
       <button class="btn btnPropio" style="width: 100%" (click)="generarFacturas()">Generar facturas</button>
     </div>
   </div>
-  <div class="row" style="margin-top: 15px">
+  <div  class="row" style="margin-top: 15px">
     <div class="col-md-12">
       <h4 class="sub-title">Visualizador de facturas</h4>
-      <iframe src="{{urlFile}}"
-              style="width:600px; height:500px;" frameborder="0"></iframe>
+      <div id="seccioPdf">
+
+      </div>
     </div>
   </div>
 </app-card>

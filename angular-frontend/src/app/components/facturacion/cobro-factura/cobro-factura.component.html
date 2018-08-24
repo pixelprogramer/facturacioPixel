@@ -1,0 +1,19 @@
+<app-card title="Cobro de factura">
+<h4 class="sub-title">Codigo de la factura</h4>
+  <input id="codigoFactura" #codigoFactura="ngModel" [(ngModel)]="objregistro_factura.codigo_registro_factura"
+         class="form-control" placeholder="201808116984578501" (keydown)="tecla($event)" >
+  <div>
+    <div *ngIf="objRespuesta != null" class="row" style="margin-top: 15px" >
+      <div class="col-md-12" style="float: right">
+        <h3>Estado de la factura: <h3 [ngStyle]="{'color': objRespuesta.estado_factura_registro == 'PAGADO' ? 'green' : 'red'}">
+          {{objRespuesta.estado_factura_registro}}
+        </h3></h3>
+      </div>
+      <div class="col-md-12">
+        <h6>Nombre: <h6 >
+          {{objRespuesta.nombre_usuario}} {{objRespuesta.apellido_usuario}}
+        </h6></h6>
+      </div>
+    </div>
+  </div>
+</app-card>
