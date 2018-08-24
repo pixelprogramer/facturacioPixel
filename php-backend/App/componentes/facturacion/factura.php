@@ -290,7 +290,7 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
                         $sql = "select * from facturacion.registro_factura rf 
                         inner join facturacion.factura fa on rf.id_factura_registro_factura_fk = fa.id_factura 
                         inner join seguridad.usuario usu on fa.id_usuario_factura_fk = usu.id_usuario 
-                        where rf.id_usuario_registro_factura_fk = '$idUsuario' and fa.id_factura ='$idFactura'
+                        where rf.id_usuario_registro_factura_fk = '$idUsuario' and fa.id_factura ='$idFactura' and rf.estado_factura ='SINPAGAR'
                         ORDER BY  rf.fecha_inicial_facturado desc";
                         $registros = $conexon->consultaComplejaAso($sql);
                         if ($registros != 0) {
@@ -326,6 +326,7 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
                                 'total_facturas_cobradas' => $totalFacturasCobradas,
                                 'detalles' => $arregloDetalle
                             ]);
+                            $rutaReporte = generarReportePDF($arregloFactura);
                         }
                     }
 
@@ -333,7 +334,7 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
 
             }
 
-            $rutaReporte = generarReportePDF($arregloFactura);
+
             $data = [
                 'code' => 'LTE-001',
                 'data' => $rutaReporte
@@ -350,7 +351,61 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
     }
     echo $helper->checkCode($data);
 });
+$app->post('/administrador/factura/cobrarFactura', function () use ($app) {
+    $helper = new helper();
+    $conexon = new conexPGSeguridad();
+    $token = $app->request->post('token', null);
+    if ($token != null) {
+        $validacionToken = $helper->authCheck($token);
+        if ($validacionToken == true) {
+            $json = $app->request->post('json', null);
+            $parametros = json_decode($json);
+            $codigo_registro_factura = (isset($parametros->codigo_registro_factura)) ? $parametros->codigo_registro_factura : null;
+            $sql = "select *, rf.estado_factura as estado_factura_registro from facturacion.registro_factura rf 
+                    inner join facturacion.factura f on rf.id_factura_registro_factura_fk = f.id_factura
+                    inner join seguridad.usuario usu on f.id_usuario_factura_fk=usu.id_usuario 
+                    where rf.codigo_registro_factura ='$codigo_registro_factura'";
+            $r = $conexon->consultaComplejaNorAso($sql);
+            if ($r['estado_factura'] == 'SINPAGAR')
+            {
+                $arregloFacturasPagar = json_decode($r['json_cargue_factura'],true);
+                for ($i=0; $i<count($arregloFacturasPagar); $i++){
+                    $codigoFactura = $arregloFacturasPagar[$i]['codigoFactura'];
+                    $sql = "UPDATE facturacion.registro_factura
+                            SET  estado_factura='PAGADO'
+                            WHERE codigo_registro_factura='$codigoFactura';";
+                    $conexon->consultaSimple($sql);
+                }
+                $sql = "select *, rf.estado_factura as estado_factura_registro from facturacion.registro_factura rf 
+                    inner join facturacion.factura f on rf.id_factura_registro_factura_fk = f.id_factura
+                    inner join seguridad.usuario usu on f.id_usuario_factura_fk=usu.id_usuario 
+                    where rf.codigo_registro_factura ='$codigo_registro_factura'";
+                $r = $conexon->consultaComplejaNorAso($sql);
+                $data =[
+                    'code'=>'LTE-001',
+                    'data'=>$r
+                ];
+            }else{
+                $data=[
+                    'code'=>'LTE-000',
+                    'status'=>'error',
+                    'msg'=>'Lo sentimos, esta factura se encuentra en estado PAGADO',
+                    'data'=>$r
+                ];
+            }
 
+        } else {
+            $data = [
+                'code' => 'LTE-013'
+            ];
+        }
+    } else {
+        $data = [
+            'code' => 'LTE-013',
+        ];
+    }
+    echo $helper->checkCode($data);
+});
 function generarReportePDF($arregloFactura)
 {
 
