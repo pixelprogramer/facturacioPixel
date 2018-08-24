@@ -56,4 +56,10 @@ export class FacturaService{
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this._http.post(this.url + 'administrador/factura/generarReporteFacturaTodos',parametros, {headers: headers});
   }
+  pagarFactura(token,registro_factura): Observable<any>{
+    let json = JSON.stringify(registro_factura);
+    let parametros = 'token='+token+'&json='+json;
+    let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+    return this._http.post(this.url + 'administrador/factura/cobrarFactura',parametros, {headers: headers});
+  }
 }
