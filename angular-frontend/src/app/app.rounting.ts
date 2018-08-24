@@ -15,6 +15,7 @@ import {CrearFacturaComponent} from "./components/facturacion/crear-factura/crea
 import {HomeAdministradorComponent} from "./components/administrador/home-administrador/home-administrador.component";
 import {GenerarFacturaComponent} from "./components/facturacion/generar-factura/generar-factura.component";
 import {CargarFacturaComponent} from "./components/facturacion/cargar-factura/cargar-factura.component";
+import {CobroFacturaComponent} from "./components/facturacion/cobro-factura/cobro-factura.component";
 
 
 
@@ -33,6 +34,7 @@ const appRoutes: Routes = [
   {path:'administrador/home',component:HomeAdministradorComponent},
   {path: 'validarUsuario', component: ValidarPaginaComponent},
   {path: 'administrador/factura/cargarFacturas',component:CargarFacturaComponent},
+  {path: 'administrador/factura/cobrarFactura',component:CobroFacturaComponent},
   {path: '**', component: ValidarPaginaComponent}
 
 ];

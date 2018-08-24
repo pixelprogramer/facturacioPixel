@@ -22,6 +22,7 @@ import { CrearFacturaComponent } from './components/facturacion/crear-factura/cr
 import { HomeAdministradorComponent } from './components/administrador/home-administrador/home-administrador.component';
 import { GenerarFacturaComponent } from './components/facturacion/generar-factura/generar-factura.component';
 import { CargarFacturaComponent } from './components/facturacion/cargar-factura/cargar-factura.component';
+import { CobroFacturaComponent } from './components/facturacion/cobro-factura/cobro-factura.component';
 
 
 
@@ -41,7 +42,8 @@ import { CargarFacturaComponent } from './components/facturacion/cargar-factura/
     CrearFacturaComponent,
     HomeAdministradorComponent,
     GenerarFacturaComponent,
-    CargarFacturaComponent
+    CargarFacturaComponent,
+    CobroFacturaComponent
   ],
   imports: [
     BrowserModule,
