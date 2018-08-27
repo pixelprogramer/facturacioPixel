@@ -1,18 +1,103 @@
-<app-card title="Cobro de factura">
-<h4 class="sub-title">Codigo de la factura</h4>
-  <input id="codigoFactura" #codigoFactura="ngModel" [(ngModel)]="objregistro_factura.codigo_registro_factura"
-         class="form-control" placeholder="201808116984578501" (keydown)="tecla($event)" >
+<ng2-toasty [position]="position"></ng2-toasty>
+<div style="position: absolute;
+    z-index: 1000;
+    width: 100%;
+    height: 100%;
+    background: #ffffff82;
+    text-align: center;" id="loaderGenerarReporte">
   <div>
-    <div *ngIf="objRespuesta != null" class="row" style="margin-top: 15px" >
-      <div class="col-md-12" style="float: right">
-        <h3>Estado de la factura: <h3 [ngStyle]="{'color': objRespuesta.estado_factura_registro == 'PAGADO' ? 'green' : 'red'}">
+    <img src="./assets/images/loader_reporte_minutas.gif"/>
+  </div>
+</div>
+
+<app-card title="Cobro de factura">
+  <h4 class="sub-title">Codigo de la factura</h4>
+  <input id="codigoFactura" #codigoFactura="ngModel" [(ngModel)]="objregistro_factura.codigo_registro_factura"
+         class="form-control" placeholder="201808116984578501" (keydown)="tecla($event)">
+  <div *ngIf="objRespuesta != null" style="margin-top: 15px;">
+    <div class="row">
+      <div class="col-md-12" style="text-align: center">
+        <strong *ngIf="objRespuesta.entrtrada_recargo == true" style="color: orange; font-size: 23px">
+          {{objRespuesta.msg}}</strong>
+        <hr>
+      </div>
+    </div>
+    <div class="row" style="text-align: center">
+      <div class="col-md-12">
+        <h5>Estado de la factura: <h5
+          [ngStyle]="{'color': objRespuesta.estado_factura_registro == 'PAGADO' ? 'green' : 'red'}">
           {{objRespuesta.estado_factura_registro}}
-        </h3></h3>
+        </h5></h5>
       </div>
       <div class="col-md-12">
-        <h6>Nombre: <h6 >
-          {{objRespuesta.nombre_usuario}} {{objRespuesta.apellido_usuario}}
-        </h6></h6>
+        <h5>Codigo de factura: <h5>
+          <strong style="color: black">{{objRespuesta.codigo_registro_factura}}</strong>
+        </h5></h5>
+      </div>
+      <div class="col-md-12">
+        <h5>Total a pagar: <h3 style="color: green">
+          <strong>{{objRespuesta.totalPagar}}</strong>
+        </h3></h5>
+      </div>
+    </div>
+
+
+    <div class="col-md-12">
+      <h6>Documento: <h6>
+        <strong style="color: #3B93BE">{{objRespuesta.documento_usuario}}</strong>
+      </h6></h6>
+    </div>
+    <div class="col-md-12">
+      <h6>Nombre: <h6>
+        <strong style="color: #3B93BE">{{objRespuesta.nombre}} {{objRespuesta.apellido}}</strong>
+      </h6></h6>
+    </div>
+    <div class="col-md-12">
+      <h6>Fecha de inicio: <h6>
+        <strong style="color: #3B93BE">{{objRespuesta.fecha_inicial_facturado}}</strong>
+      </h6></h6>
+    </div>
+    <div class="col-md-12">
+      <h6>Fecha de pago: <h6>
+        <strong style="color: #3B93BE">{{objRespuesta.fecha_pago_factura}}</strong>
+      </h6></h6>
+    </div>
+    <div class="col-md-12">
+      <h6>Fecha de corte: <h6>
+        <strong style="color: #3B93BE">{{objRespuesta.fecha_final_factura}}</strong>
+      </h6></h6>
+    </div>
+    <div class="row" style="float: right">
+      <div class="col-md-12">
+        <button class="btn btnPropio" (click)="pagarFactura()">Realizar pago</button>
+        <button class="btn btnPropio" (click)="cancelarFactura()">Cancelar pago</button>
+      </div>
+    </div>
+    <div class="row" style="width: 100%">
+      <div class="col-md-12">
+        <div class="dataTables_scrollBody"
+             style="position: relative; overflow: auto; max-height: 400px; width: 100%; margin-top: 10px">
+          <table class="table table-striped table-bordered nowrap dataTable" role="grid"
+                 aria-describedby="scr-vrt-dt_info" style="width: 100%;">
+            <thead>
+            <tr role="row" style="height: 0px;">
+              <th style="width: 144.45px;">
+                Codigo factura
+              </th>
+              <th style="width: 144.45px;">
+                Total
+              </th>
+            </tr>
+            </thead>
+
+            <tbody>
+            <tr *ngFor="let detalle of objRespuesta.json_cargue_factura" role="row" class="odd Tablas filaTabla">
+              <td>{{detalle.codigoFactura}}</td>
+              <td>{{detalle.detalle.totalTarifa}}</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
