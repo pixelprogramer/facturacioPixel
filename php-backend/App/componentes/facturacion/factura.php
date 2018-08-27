@@ -199,7 +199,7 @@ $app->post('/administrador/factura/generarFactura', function () use ($app) {
             $arregloFacturas = array();
             for ($i = 0; $i < count($usuario); $i++) {
                 $id_usuario = $usuario[$i]['id_usuario'];
-                $sql = "select fac.* from facturacion.factura fac where fac.id_usuario_factura_fk = '$id_usuario'";
+                $sql = "select fac.* from facturacion.factura fac where fac.id_usuario_factura_fk = '$id_usuario' and fac.estado_factura ='ACTIVO'";
                 $rFactura = $conexon->consultaComplejaAso($sql);
                 $factura = array();
                 if ($rFactura != 0) {
@@ -301,12 +301,19 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
                                 $arregloTarifas = json_decode($registros[$n]['json_tarifas'], true);
 
                                 $totalFactura += $arregloTarifas['totalTarifa'];
-                                array_push($arregloDetalle, ['codigoFactura'=>$registros[$n]['codigo_registro_factura'],
-                                    'detalle'=>$arregloTarifas]);
+                                array_push($arregloDetalle, ['codigoFactura' => $registros[$n]['codigo_registro_factura'],
+                                    'detalle' => $arregloTarifas]);
                                 $totalFacturasCobradas++;
+                                if ($n > 0) {
+                                    $codigo = $registros[0]['codigo_registro_factura'];
+                                    $registroActualizar = $registros[$n]['codigo_registro_factura'];
+                                    $sql = "update facturacion.registro_factura set factura_principal='$codigo' 
+                                    where codigo_registro_factura = '$registroActualizar'";
+                                    $conexon->consultaSimple($sql);
+                                }
                             }
                             $id_registro = $registros[0]['id_registro_factura'];
-                            $json=json_encode($arregloDetalle);
+                            $json = json_encode($arregloDetalle);
                             $sql = "update facturacion.registro_factura set json_cargue_factura='$json' where id_registro_factura = '$id_registro'";
                             $conexon->consultaSimple($sql);
                             array_push($arregloFactura, [
@@ -361,16 +368,30 @@ $app->post('/administrador/factura/cobrarFactura', function () use ($app) {
             $json = $app->request->post('json', null);
             $parametros = json_decode($json);
             $codigo_registro_factura = (isset($parametros->codigo_registro_factura)) ? $parametros->codigo_registro_factura : null;
-            $sql = "select *, rf.estado_factura as estado_factura_registro from facturacion.registro_factura rf 
+            $validacionFacturaPadre = false;
+            $entradaRecargo = false;
+            $codigoIngresado = $codigo_registro_factura;
+            while ($validacionFacturaPadre == false) {
+                $sql = "select *, rf.estado_factura as estado_factura_registro from facturacion.registro_factura rf 
                     inner join facturacion.factura f on rf.id_factura_registro_factura_fk = f.id_factura
                     inner join seguridad.usuario usu on f.id_usuario_factura_fk=usu.id_usuario 
                     where rf.codigo_registro_factura ='$codigo_registro_factura'";
-            $r = $conexon->consultaComplejaNorAso($sql);
-            if ($r['estado_factura'] == 'SINPAGAR')
-            {
-                $arregloFacturasPagar = json_decode($r['json_cargue_factura'],true);
-                for ($i=0; $i<count($arregloFacturasPagar); $i++){
+                $r = $conexon->consultaComplejaNorAso($sql);
+                if ($r['factura_principal'] != '' || $r['factura_principal'] != null) {
+                    $codigo_registro_factura = $r['factura_principal'];
+                    $entradaRecargo = true;
+                } else {
+                    $validacionFacturaPadre = true;
+                }
+            }
+            $totalPagar = 0;
+            if ($r['estado_factura_registro'] == 'SINPAGAR') {
+
+                $arregloFacturasPagar = json_decode($r['json_cargue_factura'], true);
+
+                for ($i = 0; $i < count($arregloFacturasPagar); $i++) {
                     $codigoFactura = $arregloFacturasPagar[$i]['codigoFactura'];
+                    $totalPagar += $arregloFacturasPagar[$i]['detalle']['totalTarifa'];
                     $sql = "UPDATE facturacion.registro_factura
                             SET  estado_factura='PAGADO'
                             WHERE codigo_registro_factura='$codigoFactura';";
@@ -381,19 +402,99 @@ $app->post('/administrador/factura/cobrarFactura', function () use ($app) {
                     inner join seguridad.usuario usu on f.id_usuario_factura_fk=usu.id_usuario 
                     where rf.codigo_registro_factura ='$codigo_registro_factura'";
                 $r = $conexon->consultaComplejaNorAso($sql);
-                $data =[
-                    'code'=>'LTE-001',
-                    'data'=>$r
+                $data = [
+                    'code' => 'LTE-001',
+                    'data' => [
+                        'totalPagar' => $totalPagar,
+                        'nombre' => $r['nombre_usuario'],
+                        'apellido' => $r['apellido_usuario'],
+                        'documento_usuario' => $r['documento_usuario'],
+                        'estado_factura_registro' => $r['estado_factura_registro'],
+                        'observacion_factura' => $r['observacion_factura'],
+                        'json_cargue_factura' => json_decode($r['json_cargue_factura']),
+                        'numero_tapa_factura' => $r['numero_tapa_factura'],
+                        'estado_usuario' => $r['estado_usuario'],
+                        'codigo_registro_factura' => $r['codigo_registro_factura'],
+                        'codigo_medidor_factura' => $r['codigo_medidor_factura'],
+                        'entrtrada_recargo' => $entradaRecargo,
+                        'msg' => 'La factura concodigo: ' . $codigoIngresado . ' esta como recargo en la factura con codigo: ' . $codigo_registro_factura
+                    ]
                 ];
-            }else{
-                $data=[
-                    'code'=>'LTE-000',
-                    'status'=>'error',
-                    'msg'=>'Lo sentimos, esta factura se encuentra en estado PAGADO',
-                    'data'=>$r
+            } else {
+                $data = [
+                    'code' => 'LTE-000',
+                    'status' => 'error',
+                    'msg' => 'Lo sentimos, esta factura se encuentra en estado PAGADO',
+                    'data' => $r
                 ];
             }
 
+        } else {
+            $data = [
+                'code' => 'LTE-013'
+            ];
+        }
+    } else {
+        $data = [
+            'code' => 'LTE-013',
+        ];
+    }
+    echo $helper->checkCode($data);
+});
+$app->post('/administrador/factura/cargarFacturaCobrar', function () use ($app) {
+    $helper = new helper();
+    $conexon = new conexPGSeguridad();
+    $token = $app->request->post('token', null);
+    if ($token != null) {
+        $validacionToken = $helper->authCheck($token);
+        if ($validacionToken == true) {
+            $json = $app->request->post('json', null);
+            $parametros = json_decode($json);
+            $codigo_registro_factura = (isset($parametros->codigo_registro_factura)) ? $parametros->codigo_registro_factura : null;
+            $validacionFacturaPadre = false;
+            $entradaRecargo = false;
+            $codigoIngresado = $codigo_registro_factura;
+            while ($validacionFacturaPadre == false) {
+                $sql = "select *, rf.estado_factura as estado_factura_registro from facturacion.registro_factura rf 
+                    inner join facturacion.factura f on rf.id_factura_registro_factura_fk = f.id_factura
+                    inner join seguridad.usuario usu on f.id_usuario_factura_fk=usu.id_usuario 
+                    where rf.codigo_registro_factura ='$codigo_registro_factura'";
+                $r = $conexon->consultaComplejaNorAso($sql);
+                if ($r['factura_principal'] != '' || $r['factura_principal'] != null) {
+                    $codigo_registro_factura = $r['factura_principal'];
+                    $entradaRecargo = true;
+                } else {
+                    $validacionFacturaPadre = true;
+                }
+            }
+            $totalPagar = 0;
+            $arregloFacturasPagar = json_decode($r['json_cargue_factura'], true);
+            for ($i = 0; $i < count($arregloFacturasPagar); $i++) {
+                $totalPagar += $arregloFacturasPagar[$i]['detalle']['totalTarifa'];
+            }
+            $data = [
+                'code' => 'LTE-001',
+                'data' => [
+                    'totalPagar' => number_format($totalPagar,0),
+                    'nombre' => $r['nombre_usuario'],
+                    'apellido' => $r['apellido_usuario'],
+                    'documento_usuario' => $r['documento_usuario'],
+                    'estado_factura_registro' => $r['estado_factura_registro'],
+                    'observacion_factura' => $r['observacion_factura'],
+                    'json_cargue_factura' => json_decode($r['json_cargue_factura']),
+                    'numero_tapa_factura' => $r['numero_tapa_factura'],
+                    'estado_usuario' => $r['estado_usuario'],
+                    'codigo_registro_factura' => $r['codigo_registro_factura'],
+                    'codigo_medidor_factura' => $r['codigo_medidor_factura'],
+                    'fecha_creacion_factura' => $r['fecha_creacion_factura'],
+                    'fecha_final_factura' => $r['fecha_final_factura'],
+                    'fecha_inicial_facturado' => $r['fecha_inicial_facturado'],
+                    'fecha_pago_factura' => $r['fecha_pago_factura'],
+                    'observacion_factura' => $r['observacion_factura'],
+                    'entrtrada_recargo' => $entradaRecargo,
+                    'msg' => 'La factura con codigo: ' . $codigoIngresado . ' esta como recargo en la factura con codigo: ' . $codigo_registro_factura
+                ]
+            ];
         } else {
             $data = [
                 'code' => 'LTE-013'
@@ -436,7 +537,7 @@ function generarReportePDF($arregloFactura)
     $X = 10;
     $Y = 10;
     $contadorFacturas = 0;
-    for($i = 0; $i<count($arregloFactura);$i++){
+    for ($i = 0; $i < count($arregloFactura); $i++) {
         $pdf->SetXY($X, $Y);
         $pdf->Image($img, '', '', 190, 80, '', '', 'T', false, 300, '', false,
             false, 0, false, false, true);
@@ -452,47 +553,47 @@ function generarReportePDF($arregloFactura)
         $pdf->SetXY($pdf->GetX(), $pdf->GetY() + 10);
         $pdf->SetFont('times', 'B', 11);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->Cell(95, 5, 'Nombres: '.$arregloFactura[$i]['nombre'].' '.$arregloFactura[$i]['apellido'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Nombres: ' . $arregloFactura[$i]['nombre'] . ' ' . $arregloFactura[$i]['apellido'], 1, 0, '', 0);
         $pdf->SetX($pdf->GetX());
         $pdf->SetFont('times', 'B', 11);
-        $pdf->Cell(95, 5, 'Direccion: '.$arregloFactura[$i]['direccion'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Direccion: ' . $arregloFactura[$i]['direccion'], 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 11);
-        $pdf->Cell(95, 5, 'Direccion envio: '.$arregloFactura[$i]['direccion_entrega'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Direccion envio: ' . $arregloFactura[$i]['direccion_entrega'], 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 11);
-        $pdf->Cell(95, 5, 'Telefono: '.$arregloFactura[$i]['telefono'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Telefono: ' . $arregloFactura[$i]['telefono'], 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 11);
-        $pdf->Cell(95, 5, 'Fecha de inicio: '.$arregloFactura[$i]['fecha_inicial'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Fecha de inicio: ' . $arregloFactura[$i]['fecha_inicial'], 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 11);
-        $pdf->Cell(95, 5, 'Fecha de pago: '.$arregloFactura[$i]['fecha_pago'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Fecha de pago: ' . $arregloFactura[$i]['fecha_pago'], 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 11);
-        $pdf->Cell(95, 5, 'Fecha de corte: '.$arregloFactura[$i]['fecha_corte'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Fecha de corte: ' . $arregloFactura[$i]['fecha_corte'], 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 11);
-        $pdf->Cell(95, 5, 'Codigo medidor: '.$arregloFactura[$i]['codigo_medidor'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Codigo medidor: ' . $arregloFactura[$i]['codigo_medidor'], 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 11);
-        $pdf->Cell(95, 5, 'Numero tapa: '.$arregloFactura[$i]['numero_tapa_factura'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Numero tapa: ' . $arregloFactura[$i]['numero_tapa_factura'], 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 11);
-        $pdf->Cell(95, 5, 'Total facturas cobradas: '.$arregloFactura[$i]['total_facturas_cobradas'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Total facturas cobradas: ' . $arregloFactura[$i]['total_facturas_cobradas'], 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 14);
         $pdf->SetTextColor(254, 92, 92);
-        $pdf->Cell(95, 10, 'Total factura: '.$arregloFactura[$i]['total_pagar_factura'], 1, 0, '', 0);
+        $pdf->Cell(95, 10, 'Total factura: ' . number_format($arregloFactura[$i]['total_pagar_factura'],0), 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 8);
         $pdf->SetX($pdf->GetX() + 88);
         $pdf->SetFont('times', 'B', 14);
@@ -514,36 +615,31 @@ function generarReportePDF($arregloFactura)
         $pdf->SetTextColor(0, 0, 0);
         for ($n = 0; $n < count($arregloFactura[$i]['detalles']); $n++) {
             $codigoFactura = $arregloFactura[$i]['detalles'][$n]['codigoFactura'];
-            for ($y = 0; $y<count($arregloFactura[$i]['detalles'][$n]['detalle']['tarifas']);$y++){
+            for ($y = 0; $y < count($arregloFactura[$i]['detalles'][$n]['detalle']['tarifas']); $y++) {
                 $pdf->SetY($pdf->GetY() + 3);
                 $pdf->Cell(25, 1, $arregloFactura[$i]['detalles'][$n]['detalle']['tarifas'][$y]['descripcion_tarifa'], 0, 0, 'L', 0);
                 $pdf->SetX($pdf->GetX());
-                $pdf->Cell(15, 1, $arregloFactura[$i]['detalles'][$n]['detalle']['tarifas'][$y]['total_tarifa'], 0, 0, 'L', 0);
+                $pdf->Cell(15, 1, number_format($arregloFactura[$i]['detalles'][$n]['detalle']['tarifas'][$y]['total_tarifa'],0), 0, 0, 'L', 0);
                 $pdf->SetX($pdf->GetX());
                 $pdf->Cell(15, 1, $codigoFactura, 0, 0, 'L', 0);
 
             }
-            if ($n%2==0){
+            if ($n % 2 == 0) {
                 $pdf->SetTextColor(0, 115, 170);
-            }else{
+            } else {
                 $pdf->SetTextColor(0, 0, 0);
             }
         }
         $X = 10;
         $Y += 85;
         $contadorFacturas++;
-        if ($contadorFacturas == 3){
+        if ($contadorFacturas == 3) {
             $X = 10;
             $Y = 10;
             $contadorFacturas = 0;
             $pdf->AddPage();
         }
     }
-
-
-
-
-
 
 
     if (!file_exists($route))
