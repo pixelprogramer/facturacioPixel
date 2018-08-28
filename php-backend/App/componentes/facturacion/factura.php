@@ -244,7 +244,7 @@ $app->post('/administrador/factura/generarFactura', function () use ($app) {
                              fecha_final_factura, json_tarifas)
                             VALUES ('$id_usuario','SINPAGAR', '$fecha_creacion', '$fechaPagar', '$fecha_factura', '$id_factura', '$fechaCorte', '$jsonTarifa') returning id_registro_factura;";
                             $r = $conexon->consultaComplejaNorAso($sql);
-                            $codigoFactura = $fechFac[0] . $fechFac[1] . $usuario[$i]['documento_usuario'] . $r['id_registro_factura'];
+                            $codigoFactura = $fechFac[0] . $fechFac[1] . $usuario[$i]['id_usuario'] . $r['id_registro_factura'];
                             $id_registro_factura = $r['id_registro_factura'];
                             $sql = "update facturacion.registro_factura set codigo_registro_factura='$codigoFactura' where id_registro_factura = '$id_registro_factura'";
                             $conexon->consultaSimple($sql);
@@ -293,7 +293,9 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
                         where rf.id_usuario_registro_factura_fk = '$idUsuario' and fa.id_factura ='$idFactura' and rf.estado_factura ='SINPAGAR'
                         ORDER BY  rf.fecha_inicial_facturado desc";
                         $registros = $conexon->consultaComplejaAso($sql);
+                        $validaEntrada = 1;
                         if ($registros != 0) {
+                            $validaEntrada = 0;
                             $totalFactura = 0;
                             $arregloDetalle = array();
                             $totalFacturasCobradas = 0;
@@ -341,11 +343,19 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
 
             }
 
+            if ($validaEntrada == 0) {
+                $data = [
+                    'code' => 'LTE-001',
+                    'data' => $rutaReporte
+                ];
+            } else {
+                $data = [
+                    'code' => 'LTE-000',
+                    'status' => 'error',
+                    'msg' => 'Lo sentimos, no hay facturas cargadas'
+                ];
+            }
 
-            $data = [
-                'code' => 'LTE-001',
-                'data' => $rutaReporte
-            ];
         } else {
             $data = [
                 'code' => 'LTE-013'
@@ -475,7 +485,7 @@ $app->post('/administrador/factura/cargarFacturaCobrar', function () use ($app) 
             $data = [
                 'code' => 'LTE-001',
                 'data' => [
-                    'totalPagar' => number_format($totalPagar,0),
+                    'totalPagar' => number_format($totalPagar, 0),
                     'nombre' => $r['nombre_usuario'],
                     'apellido' => $r['apellido_usuario'],
                     'documento_usuario' => $r['documento_usuario'],
@@ -593,7 +603,7 @@ function generarReportePDF($arregloFactura)
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 14);
         $pdf->SetTextColor(254, 92, 92);
-        $pdf->Cell(95, 10, 'Total factura: ' . number_format($arregloFactura[$i]['total_pagar_factura'],0), 1, 0, '', 0);
+        $pdf->Cell(95, 10, 'Total factura: ' . number_format($arregloFactura[$i]['total_pagar_factura'], 0), 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 8);
         $pdf->SetX($pdf->GetX() + 88);
         $pdf->SetFont('times', 'B', 14);
@@ -619,7 +629,7 @@ function generarReportePDF($arregloFactura)
                 $pdf->SetY($pdf->GetY() + 3);
                 $pdf->Cell(25, 1, $arregloFactura[$i]['detalles'][$n]['detalle']['tarifas'][$y]['descripcion_tarifa'], 0, 0, 'L', 0);
                 $pdf->SetX($pdf->GetX());
-                $pdf->Cell(15, 1, number_format($arregloFactura[$i]['detalles'][$n]['detalle']['tarifas'][$y]['total_tarifa'],0), 0, 0, 'L', 0);
+                $pdf->Cell(15, 1, number_format($arregloFactura[$i]['detalles'][$n]['detalle']['tarifas'][$y]['total_tarifa'], 0), 0, 0, 'L', 0);
                 $pdf->SetX($pdf->GetX());
                 $pdf->Cell(15, 1, $codigoFactura, 0, 0, 'L', 0);
 
