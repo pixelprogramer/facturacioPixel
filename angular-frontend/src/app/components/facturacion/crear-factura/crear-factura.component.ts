@@ -22,7 +22,7 @@ export class CrearFacturaComponent implements OnInit {
   public objTarifaFactura: Tarifas;
   public listTarifasFactura: Array<Tarifas>;
   position = "top-right";
-
+  public codigoFiltro: any;
   constructor(private _ElementService: ElementsService,
               private _UsuarioService: UsuarioService,
               private _FacturaService: FacturaService) {
@@ -32,6 +32,7 @@ export class CrearFacturaComponent implements OnInit {
     this.objFactura = new Factura('', 'ASUACOR', '',
       '', '', '', '', '000');
     this.objTarifaFactura = new Tarifas('', '', '', '000', '');
+    this.codigoFiltro = '';
   }
 
   ngOnInit() {
@@ -354,6 +355,9 @@ export class CrearFacturaComponent implements OnInit {
   regresarUsuario(){
     $("#seccionFactura").toggle(500);
     $("#seccionUsuario").toggle(600);
+  }
+  filtrarUsuario(){
+
   }
 }
 

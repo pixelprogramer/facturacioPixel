@@ -12,12 +12,24 @@
       </button>
     </div>
     <div class="col-md-2">
+      <!--
       <button class="btn btnPropio" id="btnRegistros" [disabled]="seleccionUsuario.id_usuario == ''">
         Registros
         facturados
       </button>
+      -->
     </div>
-    <div class="col-sm-12">
+
+    <div class="col-sm-12" style="margin-top: 10px">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Filtrar por documento"
+               [(ngModel)]="codigoFiltro">
+        <div class="input-group-append">
+          <button class="btn btn-primary input-group-text" type="button"
+                  (click)="filtrarUsuario()"><a style="font-size: 5px">🔎</a>
+          </button>
+        </div>
+      </div>
       <div class="col-md-12" style="margin-top: 10px" id="loaderTablaMenu">
         <div class="align-content-center">
           <div class="preloader3" style="height: 0px; padding-top: 20px">

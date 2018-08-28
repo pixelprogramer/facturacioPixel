@@ -22,7 +22,7 @@ export class CrearUsuariosComponent implements OnInit {
               private _RolService: RolService,
               private _UsuarioService: UsuarioService) {
     this.objUsuario = new Usuario('', '', '', '-',
-      '-', '', '', '000',
+      '-', '', '2', '000',
       '', '', '', '','');
     this.token = localStorage.getItem('token');
   }
