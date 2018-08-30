@@ -349,3 +349,36 @@ $app->post('/seguridad/listarRol', function () use ($app) {
 
     echo $helper->checkCode($data);
 });
+$app->post('/seguridad/filtroUsuario', function () use ($app) {
+    $json = $app->request->post('json', null);
+    $helper = new helper();
+    $token = $app->request->post('token', null);
+    if ($token != null) {
+        $validacionUsuario = $helper->authCheck($token);
+        if ($validacionUsuario == true) {
+            $filtro = $app->request->post('filtro',null);
+            $parametros = json_decode($json);
+            $conexion = new conexPGSeguridad();
+            $sql = "select usu.*, ro.descripcion_rol from seguridad.usuario usu 
+                    inner join seguridad.rol ro on usu.id_rol_fk_usuario=ro.id_rol 
+                    where usu.documento_usuario like '%$filtro%' or usu.nombre_usuario 
+                    like '%$filtro%' or usu.apellido_usuario like '%$filtro%' 
+                    order by id_usuario asc";
+            $r = $conexion->consultaComplejaAso($sql);
+            $data = [
+                'code' => 'LTE-001',
+                'data' => $r
+            ];
+        } else {
+            $data = [
+                'code' => 'LTE-013'
+            ];
+        }
+    } else {
+        $data = [
+            'code' => 'LTE-013'
+        ];
+    }
+
+    echo $helper->checkCode($data);
+});

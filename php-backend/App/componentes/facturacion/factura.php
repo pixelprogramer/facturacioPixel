@@ -477,34 +477,43 @@ $app->post('/administrador/factura/cargarFacturaCobrar', function () use ($app) 
                     $validacionFacturaPadre = true;
                 }
             }
-            $totalPagar = 0;
-            $arregloFacturasPagar = json_decode($r['json_cargue_factura'], true);
-            for ($i = 0; $i < count($arregloFacturasPagar); $i++) {
-                $totalPagar += $arregloFacturasPagar[$i]['detalle']['totalTarifa'];
+            if  ($r != 0){
+                $totalPagar = 0;
+                $arregloFacturasPagar = json_decode($r['json_cargue_factura'], true);
+                for ($i = 0; $i < count($arregloFacturasPagar); $i++) {
+                    $totalPagar += $arregloFacturasPagar[$i]['detalle']['totalTarifa'];
+                }
+                $data = [
+                    'code' => 'LTE-001',
+                    'data' => [
+                        'totalPagar' => number_format($totalPagar, 0),
+                        'nombre' => $r['nombre_usuario'],
+                        'apellido' => $r['apellido_usuario'],
+                        'documento_usuario' => $r['documento_usuario'],
+                        'estado_factura_registro' => $r['estado_factura_registro'],
+                        'observacion_factura' => $r['observacion_factura'],
+                        'json_cargue_factura' => json_decode($r['json_cargue_factura']),
+                        'numero_tapa_factura' => $r['numero_tapa_factura'],
+                        'estado_usuario' => $r['estado_usuario'],
+                        'codigo_registro_factura' => $r['codigo_registro_factura'],
+                        'codigo_medidor_factura' => $r['codigo_medidor_factura'],
+                        'fecha_creacion_factura' => $r['fecha_creacion_factura'],
+                        'fecha_final_factura' => $r['fecha_final_factura'],
+                        'fecha_inicial_facturado' => $r['fecha_inicial_facturado'],
+                        'fecha_pago_factura' => $r['fecha_pago_factura'],
+                        'observacion_factura' => $r['observacion_factura'],
+                        'entrtrada_recargo' => $entradaRecargo,
+                        'msg' => 'La factura con codigo: ' . $codigoIngresado . ' esta como recargo en la factura con codigo: ' . $codigo_registro_factura
+                    ]
+                ];
+            }else{
+                $data =[
+                    'code'=>'LTE-000',
+                    'status'=>'error',
+                    'msg'=>'Lo sentimos, no se encontraron resultados'
+                ];
             }
-            $data = [
-                'code' => 'LTE-001',
-                'data' => [
-                    'totalPagar' => number_format($totalPagar, 0),
-                    'nombre' => $r['nombre_usuario'],
-                    'apellido' => $r['apellido_usuario'],
-                    'documento_usuario' => $r['documento_usuario'],
-                    'estado_factura_registro' => $r['estado_factura_registro'],
-                    'observacion_factura' => $r['observacion_factura'],
-                    'json_cargue_factura' => json_decode($r['json_cargue_factura']),
-                    'numero_tapa_factura' => $r['numero_tapa_factura'],
-                    'estado_usuario' => $r['estado_usuario'],
-                    'codigo_registro_factura' => $r['codigo_registro_factura'],
-                    'codigo_medidor_factura' => $r['codigo_medidor_factura'],
-                    'fecha_creacion_factura' => $r['fecha_creacion_factura'],
-                    'fecha_final_factura' => $r['fecha_final_factura'],
-                    'fecha_inicial_facturado' => $r['fecha_inicial_facturado'],
-                    'fecha_pago_factura' => $r['fecha_pago_factura'],
-                    'observacion_factura' => $r['observacion_factura'],
-                    'entrtrada_recargo' => $entradaRecargo,
-                    'msg' => 'La factura con codigo: ' . $codigoIngresado . ' esta como recargo en la factura con codigo: ' . $codigo_registro_factura
-                ]
-            ];
+
         } else {
             $data = [
                 'code' => 'LTE-013'
