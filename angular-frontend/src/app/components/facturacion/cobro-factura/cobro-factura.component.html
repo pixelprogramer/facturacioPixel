@@ -69,7 +69,7 @@
     </div>
     <div class="row" style="float: right">
       <div class="col-md-12">
-        <button class="btn btnPropio" (click)="pagarFactura()">Realizar pago</button>
+        <button class="btn btnPropio" [disabled]="objRespuesta.estado_factura_registro == 'PAGADO'" (click)="pagarFactura()">Realizar pago</button>
         <button class="btn btnPropio" (click)="cancelarFactura()">Cancelar pago</button>
       </div>
     </div>

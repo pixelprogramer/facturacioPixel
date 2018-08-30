@@ -23,6 +23,7 @@ export class CrearFacturaComponent implements OnInit {
   public listTarifasFactura: Array<Tarifas>;
   position = "top-right";
   public codigoFiltro: any;
+  public filtro:any;
   constructor(private _ElementService: ElementsService,
               private _UsuarioService: UsuarioService,
               private _FacturaService: FacturaService) {
@@ -33,6 +34,7 @@ export class CrearFacturaComponent implements OnInit {
       '', '', '', '', '000');
     this.objTarifaFactura = new Tarifas('', '', '', '000', '');
     this.codigoFiltro = '';
+    this.filtro = '';
   }
 
   ngOnInit() {
@@ -357,6 +359,33 @@ export class CrearFacturaComponent implements OnInit {
     $("#seccionUsuario").toggle(600);
   }
   filtrarUsuario(){
+    if (this.filtro.trim() != ''){
+      this._UsuarioService.filtroUsuario(this.token,this.filtro).subscribe(
+        respuesta=>{
+          this._ElementService.pi_poValidarCodigo(respuesta);
+          if  (respuesta.status == 'success'){
+            if (respuesta.data != 0){
+              this.listUsuario = respuesta.data;
+              this.filtro='';
+            }else
+            {
+              this._ElementService.pi_poAlertaError('No se encontraron resultados','PIXEL');
+              this.listarUsuarios();
+            }
+          }else
+          {
+            this._ElementService.pi_poVentanaAlertaWarning('PIXEL',respuesta.msg);
+          }
+
+        },error2 => {
+
+        }
+      )
+    }else
+    {
+      this._ElementService.pi_poAlertaWarning('El campo filtro es requerido','PIXEL');
+      this.listarUsuarios();
+    }
 
   }
 }

@@ -66,6 +66,7 @@ export class CobroFacturaComponent implements OnInit {
           this._ElementService.pi_poBotonHabilitar('#codigoFactura');
           this._ElementService.pi_poAlertaSuccess(respuesta.msg, 'PIXEL');
           $("#loaderGenerarReporte").hide();
+          $("#codigoFactura").focus();
         } else {
           this.objRespuesta = respuesta.data;
           this._ElementService.pi_poVentanaAlertaWarning('PIXEL', respuesta.msg);
@@ -91,6 +92,7 @@ export class CobroFacturaComponent implements OnInit {
         this.objRespuesta=null;
         this._ElementService.pi_poBotonHabilitar('#codigoFactura');
         this._ElementService.pi_poAlertaError('Se cancelo el pago de la factura','PIXEL');
+        $("#codigoFactura").focus();
       }
     });
   }

@@ -38,6 +38,11 @@ export class UsuarioService {
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this._Http.post(this.url + 'seguridad/listarUsuarios', parametros, {headers: headers});
   }
+  filtroUsuario(token,filtro): Observable<any> {
+    let parametros = 'token=' + token+'&filtro='+filtro;
+    let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+    return this._Http.post(this.url + 'seguridad/filtroUsuario', parametros, {headers: headers});
+  }
   listarRoles(token): Observable<any> {
     let parametros = 'token=' + token;
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
