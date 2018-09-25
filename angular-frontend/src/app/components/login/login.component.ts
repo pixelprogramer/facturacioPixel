@@ -16,7 +16,7 @@ export class LoginComponent implements OnInit {
   public userIdentity: any;
   constructor(private _loginService:LoginService, private _ElementService: ElementsService,private _Router: Router,) {
     this.ObjUser =  new Usuario('','','','','','',
-      '','','','','','','');
+      '','','','','','','','');
   }
 
   ngOnInit() {

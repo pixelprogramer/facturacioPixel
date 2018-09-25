@@ -8,6 +8,6 @@ export class Factura{
     public id_usuario_factura_fk: any,
     public id_configuracion_factura_fk: any,
     public estado_factura: any,
-    public fk_ramal_factura_usuario_id: any
+    public fk_ramal_factura_factura_id: any
   ){}
 }

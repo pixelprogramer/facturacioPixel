@@ -46,17 +46,15 @@
                [ngStyle]="{'border': objUsuario.correo_usuario== '' ? 'red solid 1px' : '#577928 solid 1px'}"
                [(ngModel)]="objUsuario.correo_usuario">
       </div>
-      <!--
       <div class="col-sm-3 col-md-3">
-        <h4 class="sub-title">Rol</h4>
+        <h4 class="sub-title">Ramal</h4>
         <select class="form-control"  style="width: 100%"
-                [ngStyle]="{'border': objUsuario.id_rol_fk_usuario == '' ? 'red solid 1px' : '#577928 solid 1px'}"
-                [(ngModel)]="objUsuario.id_rol_fk_usuario">
+                [ngStyle]="{'border': objUsuario.fk_ramal_factura_usuario_id == '' ? 'red solid 1px' : '#577928 solid 1px'}"
+                [(ngModel)]="objUsuario.fk_ramal_factura_usuario_id" >
           <option value="">Seleccione</option>
-          <option *ngFor="let rol of listRol" value="{{rol.id_rol}}">{{rol.descripcion_rol}}</option>
+          <option *ngFor="let ramal of listRamales" value="{{ramal.id_ramal_factura}}">{{ramal.descripcion_ramal_factura}}</option>
         </select>
       </div>
-      -->
       <div class="col-sm-3 col-md-3">
         <h4 class="sub-title">Estado</h4>
         <select class="form-control"
@@ -74,7 +72,7 @@
                 (click)="crearUsuario()"
                 [disabled]="objUsuario.documento_usuario == '' || objUsuario.nombre_usuario == '' ||
                 objUsuario.apellido_usuario == '' || objUsuario.correo_usuario == '' ||
-                objUsuario.id_rol_fk_usuario == '000' || objUsuario.estado_usuario=='000'"
+                objUsuario.id_rol_fk_usuario == '000' || objUsuario.estado_usuario=='000' || objUsuario.fk_ramal_factura_usuario_id==''"
               >
           Crear usuario
         </button>
@@ -82,7 +80,7 @@
         <button style="padding: 5px; margin: 5px" class="btn btn-sm btn-outline-warning" id="btnActualizarMenu" (click)="actualizarUsuario()"
                 [disabled]="objUsuario.documento_usuario == '' || objUsuario.nombre_usuario == '' ||
                 objUsuario.apellido_usuario == '' || objUsuario.correo_usuario == '' ||
-                objUsuario.id_rol_fk_usuario == '000' || objUsuario.estado_usuario=='000'"
+                objUsuario.id_rol_fk_usuario == '000' || objUsuario.estado_usuario=='000' || objUsuario.fk_ramal_factura_usuario_id==''"
         >Actualizar usuario
         </button>
       </div>

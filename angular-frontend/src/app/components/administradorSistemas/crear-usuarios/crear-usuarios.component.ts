@@ -4,12 +4,14 @@ import {Usuario} from "../../../models/seguridad/usuario";
 import {Rol} from "../../../models/seguridad/rol";
 import {RolService} from "../../../services/administradorSistemas/rol.service";
 import {UsuarioService} from "../../../services/usuario.service";
+import {Ramal_factura} from "../../../models/factura/ramal_factura";
+import {FacturaService} from "../../../services/factura/factura.service";
 
 @Component({
   selector: 'app-crear-usuarios',
   templateUrl: './crear-usuarios.component.html',
   styleUrls: ['./crear-usuarios.component.scss'],
-  providers: [ElementsService, RolService, UsuarioService]
+  providers: [ElementsService, RolService, UsuarioService,FacturaService]
 })
 export class CrearUsuariosComponent implements OnInit {
   position = "top-right";
@@ -17,13 +19,14 @@ export class CrearUsuariosComponent implements OnInit {
   public listUsuario: Array<any>;
   public listRol: Array<Rol>;
   public token: any;
-
+  public listRamales: Array<Ramal_factura>;
   constructor(private _ElementService: ElementsService,
               private _RolService: RolService,
-              private _UsuarioService: UsuarioService) {
+              private _UsuarioService: UsuarioService,
+              private _FacturaService:FacturaService) {
     this.objUsuario = new Usuario('', '', '', '-',
       '-', '', '2', '000',
-      '', '', '', '','');
+      '', '', '', '','','');
     this.token = localStorage.getItem('token');
   }
 
@@ -31,6 +34,7 @@ export class CrearUsuariosComponent implements OnInit {
     this._ElementService.pi_poValidarUsuario('CrearUsuariosComponent');
     this.listarRoles();
     this.listarUsuarios();
+    this.listarRamales();
     $("#loaderTablaMenu").hide();
   }
 
@@ -113,6 +117,23 @@ export class CrearUsuariosComponent implements OnInit {
   limpiarCampos(){
     this.objUsuario = new Usuario('', '', '', '-',
       '-', '', '000', '000',
-      '', '', '', '','');
+      '', '', '', '','','');
+  }
+  listarRamales() {
+    $("#loaderTablaMenu").show();
+    this._FacturaService.listarRamales(this.token).subscribe(
+      respuesta => {
+        this._ElementService.pi_poValidarCodigo(respuesta);
+        if (respuesta.status == 'success') {
+          this.listRamales = respuesta.data;
+          this._ElementService.pi_poAlertaSuccess(respuesta.msg, respuesta.code);
+          $("#loaderTablaMenu").hide();
+        } else {
+          $("#loaderTablaMenu").hide();
+        }
+      }, error2 => {
+
+      }
+    )
   }
 }

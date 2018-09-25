@@ -32,7 +32,7 @@ export class CargarFacturaUnitarioComponent implements OnInit {
     this.token= localStorage.getItem('token');
     this.seleccionUsuario = new Usuario('', '', '',
       '', '', '', '',
-      '', '', '', '', '', '');
+      '', '', '', '', '', '','');
 
     this.filtro = '';
   }

@@ -12,6 +12,7 @@ export class Usuario{
     public fecha_creacion_usuario: any,
     public fecha_actualizacion_usuario: any,
     public fecha_ultima_ingreso_usuario: any,
-    public direccion_usuario: any
+    public direccion_usuario: any,
+    public fk_ramal_factura_usuario_id: any
     ){}
 }

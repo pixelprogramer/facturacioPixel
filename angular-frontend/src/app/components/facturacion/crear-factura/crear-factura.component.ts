@@ -32,7 +32,7 @@ export class CrearFacturaComponent implements OnInit {
               private _FacturaService: FacturaService) {
     this.seleccionUsuario = new Usuario('', '', '',
       '', '', '', '',
-      '', '', '', '', '', '');
+      '', '', '', '', '', '', '');
     this.objFactura = new Factura('', 'ASUACOR', '',
       '', '', '', '', '000', '');
     this.objTarifaFactura = new Tarifas('', '', '', '000', '');
@@ -117,7 +117,7 @@ export class CrearFacturaComponent implements OnInit {
       if (this.objFactura.estado_factura != '000') {
         if (this.objFactura.codigo_medidor_factura != '') {
           if (this.objFactura.direccion_factura != '') {
-            if (this.objFactura.fk_ramal_factura_usuario_id != '') {
+            if (this.objFactura.fk_ramal_factura_factura_id != '') {
               if (this.objFactura.estado_factura == 'CANCELADO') {
                 swal({
                   title: 'Esta seguro de crear la factura en estado cancelado?',
@@ -166,26 +166,31 @@ export class CrearFacturaComponent implements OnInit {
       if (this.objFactura.estado_factura != '000') {
         if (this.objFactura.codigo_medidor_factura != '') {
           if (this.objFactura.direccion_factura != '') {
-            if (this.objFactura.estado_factura == 'CANCELADO') {
-              swal({
-                title: 'Esta seguro de crear la factura en estado cancelado?',
-                text: 'Si es afirmativa su respuesta, esta factura no va ser tomada al momento de de generar el reporte de facturas.',
-                type: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Si, lo estoy'
-              }).then((result) => {
-                $("#loaderUsuario").show();
-                if (result.value) {
-                  this.metodoActualizarFactura();
-                  this._ElementService.pi_poBotonHabilitar('#btnActualizarFactura');
-                } else {
-                  this._ElementService.pi_poBotonHabilitar('#btnActualizarFactura');
-                }
-              });
+            if (this.objFactura.fk_ramal_factura_factura_id != '') {
+              if (this.objFactura.estado_factura == 'CANCELADO') {
+                swal({
+                  title: 'Esta seguro de crear la factura en estado cancelado?',
+                  text: 'Si es afirmativa su respuesta, esta factura no va ser tomada al momento de de generar el reporte de facturas.',
+                  type: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Si, lo estoy'
+                }).then((result) => {
+                  $("#loaderUsuario").show();
+                  if (result.value) {
+                    this.metodoActualizarFactura();
+                    this._ElementService.pi_poBotonHabilitar('#btnActualizarFactura');
+                  } else {
+                    this._ElementService.pi_poBotonHabilitar('#btnActualizarFactura');
+                  }
+                });
+              } else {
+                this.metodoActualizarFactura();
+                this._ElementService.pi_poBotonHabilitar('#btnActualizarFactura');
+              }
             } else {
-              this.metodoActualizarFactura();
+              this._ElementService.pi_poVentanaAlertaWarning('PIXEL', 'Lo sentismo, El ramal es requerido');
               this._ElementService.pi_poBotonHabilitar('#btnActualizarFactura');
             }
           } else {
@@ -369,6 +374,14 @@ export class CrearFacturaComponent implements OnInit {
   regresarUsuario() {
     $("#seccionFactura").toggle(500);
     $("#seccionUsuario").toggle(600);
+    this.seleccionUsuario = new Usuario('', '', '',
+      '', '', '', '',
+      '', '', '', '', '', '', '');
+    this.objFactura = new Factura('', 'ASUACOR', '',
+      '', '', '', '', '000', '');
+    this.objTarifaFactura = new Tarifas('', '', '', '000', '');
+    this.codigoFiltro = '';
+    this.filtro = '';
   }
 
   filtrarUsuario() {

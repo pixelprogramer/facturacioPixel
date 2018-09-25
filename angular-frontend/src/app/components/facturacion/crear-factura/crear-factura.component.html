@@ -109,24 +109,24 @@
                [ngStyle]="{'border': objFactura.direccion_factura== '' ? 'red solid 1px' : '#577928 solid 1px'}"
                [(ngModel)]="objFactura.direccion_factura">
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
         <h4 class="sub-title">Número de tapa</h4>
         <input class="form-control" id="tapa" name="codigo_medidor" placeholder="Tapa"
                #descripcionExamen="ngModel"
                [ngStyle]="{'border': objFactura.direccion_factura== '' ? 'red solid 1px' : '#577928 solid 1px'}"
                [(ngModel)]="objFactura.numero_tapa_factura">
       </div>
-      <div class="col-sm-2 col-md-3">
-        <h4 class="sub-title">Permiso</h4>
-        <select class="form-control"  style="width: 50%"
-                [ngStyle]="{'border': objFactura.fk_ramal_factura_usuario_id == '' ? 'red solid 1px' : '#577928 solid 1px'}"
-                [(ngModel)]="objFactura.fk_ramal_factura_usuario_id" >
+      <div class="col-sm-2 col-md-2">
+        <h4 class="sub-title">Ramal</h4>
+        <select class="form-control"  style="width: 100%"
+                [ngStyle]="{'border': objFactura.fk_ramal_factura_factura_id == '' ? 'red solid 1px' : '#577928 solid 1px'}"
+                [(ngModel)]="objFactura.fk_ramal_factura_factura_id" >
           <option value="">Seleccione</option>
           <option *ngFor="let ramal of listRamales" value="{{ramal.id_ramal_factura}}">{{ramal.descripcion_ramal_factura}}</option>
         </select>
       </div>
 
-      <div class="col-sm-2 col-md-3">
+      <div class="col-sm-2 col-md-2">
         <h4 class="sub-title">Estado</h4>
         <select class="form-control"
                 [ngStyle]="{'border': objFactura.estado_factura == '000' ? 'red solid 1px' : '#577928 solid 1px'}"
@@ -147,7 +147,7 @@
     </div>
     <div class="row" style="margin-top: 5px">
       <div class="col-md-12">
-        <button class="btn btnPropio" style="height: 22px;width: 100%; padding-top: 2px;" id="btnCrearFactura" (click)="crearFactura()">Crear
+        <button class="btn btnPropio" style="height: 22px;width: 100%; padding-top: 2px;" [disabled]="objFactura.id_factura != ''" id="btnCrearFactura" (click)="crearFactura()">Crear
           factura
         </button>
       </div>
@@ -185,6 +185,9 @@
           <th style="width: 70px;">
             Dirección de envío
           </th>
+          <th style="width: 70px;">
+            Ramal
+          </th>
           <th style="width: 144.45px;">
             Número de tapa
           </th>
@@ -204,6 +207,7 @@
           <td>{{factura.id_factura}}</td>
           <td>{{factura.codigo_medidor_factura}}</td>
           <td>{{factura.direccion_factura}}</td>
+          <td>{{factura.descripcion_ramal_factura}}</td>
           <td>{{factura.numero_tapa_factura}}</td>
           <td>{{factura.observacion_factura}}</td>
           <td><span
