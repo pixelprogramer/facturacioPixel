@@ -283,7 +283,13 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
     if ($token != null) {
         $validacionToken = $helper->authCheck($token);
         if ($validacionToken == true) {
-            $sql = "select * from seguridad.usuario";
+            $usuario_id = $app->request->post('id_usuario', null);
+            if ($usuario_id == '' || $usuario_id == null) {
+                $sql = "select * from seguridad.usuario";
+            } else {
+                $sql = "select * from seguridad.usuario where id_usuario = '$usuario_id'";
+            }
+
             $usuario = $conexon->consultaComplejaAso($sql);
             $arregloFactura = array();
             $validaEntrada = 1;
@@ -799,38 +805,38 @@ function generarReportePDF($arregloFactura)
         $pdf->SetFont('times', 'B', 14);
         $pdf->SetTextColor(254, 92, 92);
         $pdf->Cell(95, 10, 'Total factura: ' . number_format($arregloFactura[$i]['total_pagar_factura'], 0), 1, 0, '', 0);
-        $pdf->SetXY(10,$pdf->GetY()+20);
+        $pdf->SetXY(10, $pdf->GetY() + 15);
 
-        $pdf->Line($pdf->GetX(), $pdf->GetY(), $pdf->GetX()+190, $pdf->GetY());
-        $pdf->SetXY($pdf->GetX()+1,$pdf->GetY()-3);
+        $pdf->Line($pdf->GetX(), $pdf->GetY(), $pdf->GetX() + 190, $pdf->GetY());
+        $pdf->SetXY($pdf->GetX() + 1, $pdf->GetY() - 3);
         $pdf->Image($imgTijera, '', '', 3, 3, '', '', 'T', false, 300, '', false,
             false, 0, false, false, true);
-        $pdf->SetY($pdf->GetY()+5);
+        $pdf->SetY($pdf->GetY() + 10);
         $pdf->SetTextColor(0, 115, 170);
         $pdf->SetFont('times', 'B', 10);
-        $pdf->Cell(190,5,'ASUACOR-Desprendible',1,1,'C');
+        $pdf->Cell(190, 5, 'ASUACOR-Desprendible', 1, 1, 'C');
         $pdf->SetFont('times', 'B', 9);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetXY(10,$pdf->GetY());
-        $pdf->Cell(95,3,'Codigo Factura: '.$arregloFactura[$i]['codigo_registro_factura'],1,1,'L');
-        $pdf->SetXY(10,$pdf->GetY());
-        $pdf->Cell(95,3,'Nombre: '. $arregloFactura[$i]['nombre'] . ' ' . $arregloFactura[$i]['apellido'],1,1,'L');
-        $pdf->SetXY(10,$pdf->GetY());
-        $pdf->Cell(95,3,'Ramal: '. $arregloFactura[$i]['ramal'],1,1,'L');
-        $pdf->SetXY(10,$pdf->GetY());
-        $pdf->Cell(95,3,'Fecha de corte: '. $arregloFactura[$i]['fecha_corte'],1,1,'L');
-        $pdf->SetXY(10,$pdf->GetY());
-        $pdf->Cell(95,3,'Cantidad facturas cobradas: '. $arregloFactura[$i]['total_facturas_cobradas'],1,1,'L');
-        $pdf->SetXY(10,$pdf->GetY());
+        $pdf->SetXY(10, $pdf->GetY());
+        $pdf->Cell(95, 3, 'Codigo Factura: ' . $arregloFactura[$i]['codigo_registro_factura'], 1, 1, 'L');
+        $pdf->SetXY(10, $pdf->GetY());
+        $pdf->Cell(95, 3, 'Nombre: ' . $arregloFactura[$i]['nombre'] . ' ' . $arregloFactura[$i]['apellido'], 1, 1, 'L');
+        $pdf->SetXY(10, $pdf->GetY());
+        $pdf->Cell(95, 3, 'Ramal: ' . $arregloFactura[$i]['ramal'], 1, 1, 'L');
+        $pdf->SetXY(10, $pdf->GetY());
+        $pdf->Cell(95, 3, 'Fecha de corte: ' . $arregloFactura[$i]['fecha_corte'], 1, 1, 'L');
+        $pdf->SetXY(10, $pdf->GetY());
+        $pdf->Cell(95, 3, 'Cantidad facturas cobradas: ' . $arregloFactura[$i]['total_facturas_cobradas'], 1, 1, 'L');
+        $pdf->SetXY(10, $pdf->GetY());
         $pdf->SetTextColor(254, 92, 92);
-        $pdf->Cell(95,3,'Total factura: '. number_format($arregloFactura[$i]['total_pagar_factura']),1,1,'L');
+        $pdf->Cell(95, 3, 'Total factura: ' . number_format($arregloFactura[$i]['total_pagar_factura']), 1, 1, 'L');
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetXY(10,$pdf->GetY());
-        $pdf->Cell(95,13,'',1,0,'L');
-        $pdf->SetXY(10,$pdf->GetY()+9);
+        $pdf->SetXY(10, $pdf->GetY());
+        $pdf->Cell(95, 13, '', 1, 0, 'L');
+        $pdf->SetXY(10, $pdf->GetY() + 9);
         $pdf->SetFont('times', 'B', 5);
-        $pdf->Cell(95,5,'ESPACIO PARA SELLO Y FIRMA DEL CAJERO: ',0,0,'C');
-        $pdf->SetXY(100,$pdf->GetY()-25);
+        $pdf->Cell(95, 5, 'ESPACIO PARA SELLO Y FIRMA DEL CAJERO: ', 0, 0, 'C');
+        $pdf->SetXY(100, $pdf->GetY() - 30);
         $pdf->write1DBarcode($arregloFactura[$i]['codigo_registro_factura'], 'C128', '', '', '', 30, 1.0, $style, 'N');
 
         /*
