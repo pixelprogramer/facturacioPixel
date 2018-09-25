@@ -73,8 +73,8 @@ export class FacturaService{
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this._http.post(this.url + 'administrador/factura/generarFacturaUsuarioUnitario',parametros, {headers: headers});
   }
-  generarFactura(token,id_ramal): Observable<any>{
-    let parametros = 'token='+token+'&id='+id_ramal;
+  generarFactura(token,id_ramal,id_usuario): Observable<any>{
+    let parametros = 'token='+token+'&id='+id_ramal+'&id_usuario='+id_usuario;
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this._http.post(this.url + 'administrador/factura/generarReporteFacturaTodos',parametros, {headers: headers});
   }

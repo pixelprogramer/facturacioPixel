@@ -4,12 +4,14 @@ import {NgbDateStruct,NgbDateParserFormatter,NgbCalendar} from "@ng-bootstrap/ng
 import {GLOBAL} from "../../../services/global";
 import {FacturaService} from "../../../services/factura/factura.service";
 import {Ramal_factura} from "../../../models/factura/ramal_factura";
+import {Usuario} from "../../../models/seguridad/usuario";
+import {UsuarioService} from "../../../services/usuario.service";
 
 @Component({
   selector: 'app-generar-factura',
   templateUrl: './generar-factura.component.html',
   styleUrls: ['./generar-factura.component.scss'],
-  providers:[ElementsService,FacturaService]
+  providers:[ElementsService,FacturaService,UsuarioService]
 })
 export class GenerarFacturaComponent implements OnInit {
   position = "top-right";
@@ -18,12 +20,20 @@ export class GenerarFacturaComponent implements OnInit {
   token = '';
   public listRamales: Array<Ramal_factura>;
   public id_ramal:string;
-  constructor(private _ElementService: ElementsService,public parserFormatter: NgbDateParserFormatter,
+  public listUsuario: Array<any>;
+  public seleccionUsuario: Usuario;
+  public filtro:any;
+  constructor(private _ElementService: ElementsService,public parserFormatter: NgbDateParserFormatter,private _UsuarioService: UsuarioService,
               public calendar: NgbCalendar,
               private _FacturaService: FacturaService) {
     this.urlFile = GLOBAL.urlFiles;
     this.token = localStorage.getItem('token');
     this.id_ramal='todo';
+    this.seleccionUsuario = new Usuario('', '', '',
+      '', '', '', '',
+      '', '', '', '', '', '','');
+
+    this.filtro = '';
   }
 
   ngOnInit() {
@@ -32,7 +42,7 @@ export class GenerarFacturaComponent implements OnInit {
   }
   generarFacturas(){
     this.urlFile=GLOBAL.urlFiles;
-    this._FacturaService.generarFactura(this.token,this.id_ramal).subscribe(
+    this._FacturaService.generarFactura(this.token,this.id_ramal,this.seleccionUsuario.id_usuario).subscribe(
       respuesta=>{
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success'){
@@ -66,5 +76,60 @@ export class GenerarFacturaComponent implements OnInit {
       }
     )
   }
+  filtrarUsuario(){
+    if (this.filtro.trim() != ''){
+      this._UsuarioService.filtroUsuario(this.token,this.filtro).subscribe(
+        respuesta=>{
+          this._ElementService.pi_poValidarCodigo(respuesta);
+          if  (respuesta.status == 'success'){
+            if (respuesta.data != 0){
+              this.listUsuario = respuesta.data;
+              this.filtro='';
+            }else
+            {
+              this._ElementService.pi_poAlertaError('No se encontraron resultados','PIXEL');
+              this.listarUsuarios();
+            }
+          }else
+          {
+            this._ElementService.pi_poVentanaAlertaWarning('PIXEL',respuesta.msg);
+          }
 
+        },error2 => {
+
+        }
+      )
+    }else
+    {
+      this._ElementService.pi_poAlertaWarning('El campo filtro es requerido','PIXEL');
+      this.listarUsuarios();
+    }
+
+  }
+  listarUsuarios() {
+    $("#loaderTablaMenu").show();
+    this._UsuarioService.listarUsuarioSeguridad(this.token).subscribe(
+      respuesta => {
+        this._ElementService.pi_poValidarCodigo(respuesta);
+        if (respuesta.status == 'success') {
+          if (respuesta.data != 0) {
+            this.listUsuario = respuesta.data;
+            $("#loaderTablaMenu").hide();
+          } else {
+            this.listUsuario = [];
+            $("#loaderTablaMenu").hide();
+          }
+        } else {
+          this._ElementService.pi_poVentanaAlertaWarning(respuesta.code, respuesta.msg);
+        }
+      }, error2 => {
+
+      }
+    );
+
+  }
+  seleccionarUsuario(usuario) {
+    this.seleccionUsuario = usuario;
+
+  }
 }

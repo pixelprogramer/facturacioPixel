@@ -2,6 +2,13 @@
 <app-card title="Generar facturas" style="height: 100%">
   <div class="row">
     <div class="col-md-12">
+      <h5>Usuario seleccionado: <strong style="color: red">{{seleccionUsuario.nombre_usuario}} {{seleccionUsuario.apellido_usuario}}</strong></h5>
+      <br/>
+      <button style="margin-top: 10px;width: 100%" class="btn btnPropio" (click)="[modalSeleccionarUsuario.show(),listarUsuarios()]">Seleccionar usuario</button>
+    </div>
+  </div>
+  <div class="row" style="margin-top: 15px;">
+    <div class="col-md-12">
       <h4 class="sub-title">Ramal</h4>
       <select class="form-control" style="width: 100%"
               [ngStyle]="{'border': id_ramal == 'todo' ? 'red solid 1px' : '#577928 solid 1px'}"
@@ -27,3 +34,73 @@
     </div>
   </div>
 </app-card>
+<app-modal-basic #modalSeleccionarUsuario>
+  <div class="app-modal-header">
+    <h4 class="modal-title">¿Seleccionar usuario?</h4>
+  </div>
+  <div class="app-modal-body">
+    <div class="col-sm-12" style="margin-top: 10px">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Filtrar por documento o nombre "
+               [(ngModel)]="filtro">
+        <div class="input-group-append">
+          <button class="btn btn-primary input-group-text" type="button"
+                  (click)="filtrarUsuario()"><a style="font-size: 5px">🔎</a>
+          </button>
+        </div>
+      </div>
+      <div class="col-md-12" style="margin-top: 10px" id="loaderTablaMenu">
+        <div class="align-content-center">
+          <div class="preloader3" style="height: 0px; padding-top: 20px">
+            <div class="circ1 loader-warning"></div>
+            <div class="circ2 loader-warning"></div>
+            <div class="circ3 loader-warning"></div>
+            <div class="circ4 loader-warning"></div>
+          </div>
+        </div>
+      </div>
+      <div class="dataTables_scrollBody"
+           style="position: relative; overflow: auto; max-height: 400px; width: 100%; margin-top: 10px">
+        <table class="table table-striped table-bordered nowrap dataTable" role="grid"
+               aria-describedby="scr-vrt-dt_info" style="width: 100%;">
+          <thead>
+          <tr role="row" style="height: 0px;">
+            <th style="width: 144.45px;">
+              Documento
+            </th>
+            <th style="width: 144.45px;">
+              Nombres
+            </th>
+            <th style="width: 144.45px;">
+              Apellido
+            </th>
+            <th style="width: 70px;">
+              Telefono
+            </th>
+            <th style="width: 70px;">
+              Correo
+            </th>
+            <th style="width: 30px;">
+              Estado
+            </th>
+
+          </tr>
+          </thead>
+
+          <tbody>
+          <tr *ngFor="let usuario of listUsuario" role="row" class="odd Tablas filaTabla"
+              (click)="[seleccionarUsuario(usuario),modalSeleccionarUsuario.hide()]">
+            <td>{{usuario.documento_usuario}}</td>
+            <td>{{usuario.nombre_usuario}}</td>
+            <td>{{usuario.apellido_usuario}}</td>
+            <td>{{usuario.telefono_usuario}}</td>
+            <td>{{usuario.correo_usuario}}</td>
+            <td>{{usuario.estado_usuario}}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</app-modal-basic>
