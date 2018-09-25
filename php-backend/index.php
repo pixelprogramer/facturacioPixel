@@ -30,23 +30,8 @@ require 'vendor/phpoffice/phpspreadsheet/src/PhpSpreadsheet/Reader/IReader.php';
 require 'vendor/tecnickcom/tcpdf/examples/tcpdf_include.php';
 
 //Componentes
-require 'App/componentes/traladoUsuarios.php';
-require 'App/componentes/crearGrupo.php';
-require 'App/componentes/pruebas.php';
-require 'App/componentes/pantallas/comercial.php';
-require 'App/componentes/pantallas/logistica.php';
-require 'App/componentes/pantallas/calificacion.php';
-require 'App/componentes/pantallas/premarcado.php';
-require 'App/componentes/calificacion/unificacionEstudiantes.php';
 require 'App/componentes/usuario.php';
 require 'App/componentes/administradorSistemas/rol.php';
 require 'App/componentes/administradorSistemas/menu.php';
-require 'App/componentes/minutas/categoria.php';
-require 'App/componentes/minutas/acciones.php';
-require 'App/componentes/minutas/sub_categoria.php';
-require 'App/componentes/minutas/registro_minutas.php';
-require 'App/componentes/siscalificacion/colegios.php';
-require 'App/componentes/distribuidor/nuevoPedido.php';
-require 'App/componentes/calificacion/indicadoresCalificacion.php';
 require 'App/componentes/facturacion/factura.php';
 $app->run();
