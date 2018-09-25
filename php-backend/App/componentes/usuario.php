@@ -71,6 +71,7 @@ $app->post('/seguridad/crearUsuario', function () use ($app) {
                         $id_rol_fk = (isset($parametros->id_rol_fk_usuario)) ? $parametros->id_rol_fk_usuario : null;
                         $estado_usuario = (isset($parametros->estado_usuario)) ? $parametros->estado_usuario : null;
                         $direccion_usuario = (isset($parametros->direccion_usuario)) ? $parametros->direccion_usuario : null;
+                        $fk_ramal_factura_usuario_id = (isset($parametros->fk_ramal_factura_usuario_id)) ? $parametros->fk_ramal_factura_usuario_id : null;
                         $fecha_creacion = date('Y-m-d H:i');
                         $fecha_actualizacion = date('Y-m-d H:i');
                         $sql = "INSERT INTO seguridad.usuario(
@@ -91,13 +92,13 @@ $app->post('/seguridad/crearUsuario', function () use ($app) {
                         $idUsuario = $r['id_usuario'];
                         $sql = "INSERT INTO facturacion.factura(
                              observacion_factura, codigo_medidor_factura, direccion_factura, numero_tapa_factura, 
-                            id_usuario_factura_fk, id_configuracion_factura_fk, estado_factura)
-                            VALUES ('ASUACOR', 'No encontrado', '$direccion_usuario', 'No encontrado', '$idUsuario', '$id_configuracion_factura', 'ACTIVO') returning id_factura;";
+                            id_usuario_factura_fk, id_configuracion_factura_fk, estado_factura,fk_ramal_factura_factura_id)
+                            VALUES ('ASUACOR', 'No encontrado', '$direccion_usuario', 'No encontrado', '$idUsuario', '$id_configuracion_factura', 'ACTIVO','$ramaamal_factura_usuario_id') returning id_factura;";
                         $r = $conexion->consultaComplejaNorAso($sql);
                         $id_factura = $r['id_factura'];
                         $sql = "INSERT INTO configuracion.tarifas(
                                 descripcion_tarifa, total_tarifa, estado_tarifa, id_factura_tarifa_fk)
-                                VALUES ('Trifa fija', '12500', 'ACTIVO', '$id_factura');";
+                                VALUES ('Tarifa fija', '12500', 'ACTIVO', '$id_factura');";
                         $conexion->consultaSimple($sql);
                         $data = [
                             'code' => 'LTE-001'

@@ -54,6 +54,7 @@ class jwtAuth
             'correo' => $usuario['correo_usuario'],
             'telefono' => $usuario['telefono_usuario'],
             'direccion' => $usuario['direccion_usuario'],
+            'fk_ramal_factura_usuario_id' => $usuario['fk_ramal_factura_usuario_id'],
             'id_usuario_joseluis' => $usuario['id_usuario_jeluis'],
             'rol' => $usuario['id_rol_fk_usuario'],
             'permisos'=>$r,
