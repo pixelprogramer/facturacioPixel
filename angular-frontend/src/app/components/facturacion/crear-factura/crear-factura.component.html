@@ -96,26 +96,36 @@
     </div>
     <div class="row" style="margin-top: 5px">
       <div class="col-md-3">
-        <h4 class="sub-title">Codigo medidor</h4>
-        <input class="form-control" id="apellido" name="codigo_medidor" placeholder="Codigo"
+        <h4 class="sub-title">Código medidor</h4>
+        <input class="form-control" id="apellido" name="codigo_medidor" placeholder="Código"
                #descripcionExamen="ngModel"
                [ngStyle]="{'border': objFactura.codigo_medidor_factura== '' ? 'red solid 1px' : '#577928 solid 1px'}"
                [(ngModel)]="objFactura.codigo_medidor_factura">
       </div>
       <div class="col-md-3">
-        <h4 class="sub-title">Direccion entrega factura</h4>
-        <input class="form-control" id="Direccion" name="codigo_medidor" placeholder="Direccion"
+        <h4 class="sub-title">Dirección entrega factura</h4>
+        <input class="form-control" id="Direccion" name="codigo_medidor" placeholder="Dirección"
                #descripcionExamen="ngModel"
                [ngStyle]="{'border': objFactura.direccion_factura== '' ? 'red solid 1px' : '#577928 solid 1px'}"
                [(ngModel)]="objFactura.direccion_factura">
       </div>
       <div class="col-md-3">
-        <h4 class="sub-title">Numero de tapa</h4>
+        <h4 class="sub-title">Número de tapa</h4>
         <input class="form-control" id="tapa" name="codigo_medidor" placeholder="Tapa"
                #descripcionExamen="ngModel"
                [ngStyle]="{'border': objFactura.direccion_factura== '' ? 'red solid 1px' : '#577928 solid 1px'}"
                [(ngModel)]="objFactura.numero_tapa_factura">
       </div>
+      <div class="col-sm-2 col-md-3">
+        <h4 class="sub-title">Permiso</h4>
+        <select class="form-control"  style="width: 50%"
+                [ngStyle]="{'border': objFactura.fk_ramal_factura_usuario_id == '' ? 'red solid 1px' : '#577928 solid 1px'}"
+                [(ngModel)]="objFactura.fk_ramal_factura_usuario_id" >
+          <option value="">Seleccione</option>
+          <option *ngFor="let ramal of listRamales" value="{{ramal.id_ramal_factura}}">{{ramal.descripcion_ramal_factura}}</option>
+        </select>
+      </div>
+
       <div class="col-sm-2 col-md-3">
         <h4 class="sub-title">Estado</h4>
         <select class="form-control"
@@ -129,7 +139,7 @@
     </div>
     <div class="row" style="margin-top: 10px">
       <div class="col-md-12">
-        <h4 class="sub-title">Estado</h4>
+        <h4 class="sub-title">Observación</h4>
         <input class="form-control" style="width: 100%; height: 50px" type="text" #observacion="ngModel"
                [ngStyle]="{'border': objFactura.observacion_factura == '' ? 'red solid 1px' : '#577928 solid 1px'}"
                [(ngModel)]="objFactura.observacion_factura">
@@ -155,7 +165,7 @@
     <div class="row">
       <div class="col-md-1">
         <button class="btn btnPropio" id="btn" (click)="cargarSeccionTarifaFactura()"
-                [disabled]="objFactura.id_factura == ''">Tarifas de factura con codigo: {{objFactura.id_factura}}
+                [disabled]="objFactura.id_factura == ''">Tarifas de factura con código: {{objFactura.id_factura}}
         </button>
       </div>
     </div>
@@ -167,20 +177,20 @@
         <thead>
         <tr role="row" style="height: 0px;">
           <th style="width: 144.45px;">
-            Codigo
+            Código
           </th>
           <th style="width: 144.45px;">
             Codigo medidor
           </th>
           <th style="width: 70px;">
-            Direccion de envio
+            Dirección de envío
           </th>
           <th style="width: 144.45px;">
-            Numero de tapa
+            Número de tapa
           </th>
 
           <th style="width: 70px;">
-            Observacion
+            Observación
           </th>
           <th style="width: 70px;">
             Estado
@@ -261,10 +271,10 @@
         <thead>
         <tr role="row" style="height: 0px;">
           <th style="width: 144.45px;">
-            Codigo
+            Código
           </th>
           <th style="width: 144.45px;">
-            Descripcion
+            Descripción
           </th>
           <th style="width: 70px;">
             Total tarifa

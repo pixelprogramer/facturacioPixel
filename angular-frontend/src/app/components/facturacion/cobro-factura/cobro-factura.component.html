@@ -11,7 +11,7 @@
 </div>
 
 <app-card title="Cobro de factura">
-  <h4 class="sub-title">Codigo de la factura</h4>
+  <h4 class="sub-title">Código de la factura</h4>
   <input id="codigoFactura" #codigoFactura="ngModel" [(ngModel)]="objregistro_factura.codigo_registro_factura"
          class="form-control" placeholder="201808116984578501" (keydown)="tecla($event)">
   <div *ngIf="objRespuesta != null" style="margin-top: 15px;">
@@ -30,7 +30,7 @@
         </h5></h5>
       </div>
       <div class="col-md-12">
-        <h5>Codigo de factura: <h5>
+        <h5>Código de factura: <h5>
           <strong style="color: black">{{objRespuesta.codigo_registro_factura}}</strong>
         </h5></h5>
       </div>
@@ -82,7 +82,7 @@
             <thead>
             <tr role="row" style="height: 0px;">
               <th style="width: 144.45px;">
-                Codigo factura
+                Codigó factura
               </th>
               <th style="width: 144.45px;">
                 Total

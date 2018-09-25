@@ -6,6 +6,7 @@ import {Factura} from "../../../models/factura/factura";
 import {FacturaService} from "../../../services/factura/factura.service";
 import swal from "sweetalert2";
 import {Tarifas} from "../../../models/factura/tarifas";
+import {Ramal_factura} from "../../../models/factura/ramal_factura";
 
 @Component({
   selector: 'app-crear-factura',
@@ -23,7 +24,9 @@ export class CrearFacturaComponent implements OnInit {
   public listTarifasFactura: Array<Tarifas>;
   position = "top-right";
   public codigoFiltro: any;
-  public filtro:any;
+  public filtro: any;
+  public listRamales: Array<Ramal_factura>;
+
   constructor(private _ElementService: ElementsService,
               private _UsuarioService: UsuarioService,
               private _FacturaService: FacturaService) {
@@ -31,7 +34,7 @@ export class CrearFacturaComponent implements OnInit {
       '', '', '', '',
       '', '', '', '', '', '');
     this.objFactura = new Factura('', 'ASUACOR', '',
-      '', '', '', '', '000');
+      '', '', '', '', '000', '');
     this.objTarifaFactura = new Tarifas('', '', '', '000', '');
     this.codigoFiltro = '';
     this.filtro = '';
@@ -41,6 +44,7 @@ export class CrearFacturaComponent implements OnInit {
     this._ElementService.pi_poValidarUsuario('CrearFacturaComponent');
     this.token = localStorage.getItem('token');
     this.listarUsuarios();
+    this.listarRamales();
     $("#seccionFactura").hide();
     $("#idSeccionTarifa").hide();
   }
@@ -113,25 +117,30 @@ export class CrearFacturaComponent implements OnInit {
       if (this.objFactura.estado_factura != '000') {
         if (this.objFactura.codigo_medidor_factura != '') {
           if (this.objFactura.direccion_factura != '') {
-            if (this.objFactura.estado_factura == 'CANCELADO') {
-              swal({
-                title: 'Esta seguro de crear la factura en estado cancelado?',
-                text: 'Si es afirmativa su respuesta, esta factura no va ser tomada al momento de de generar el reporte de facturas.',
-                type: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Si, lo estoy'
-              }).then((result) => {
-                $("#loaderUsuario").show();
-                if (result.value) {
-                  this.metodoCrearFactura();
-                } else {
-                  this._ElementService.pi_poBotonHabilitar('#btnCrearFactura');
-                }
-              });
+            if (this.objFactura.fk_ramal_factura_usuario_id != '') {
+              if (this.objFactura.estado_factura == 'CANCELADO') {
+                swal({
+                  title: 'Esta seguro de crear la factura en estado cancelado?',
+                  text: 'Si es afirmativa su respuesta, esta factura no va ser tomada al momento de de generar el reporte de facturas.',
+                  type: 'warning',
+                  showCancelButton: true,
+                  confirmButtonColor: '#3085d6',
+                  cancelButtonColor: '#d33',
+                  confirmButtonText: 'Si, lo estoy'
+                }).then((result) => {
+                  $("#loaderUsuario").show();
+                  if (result.value) {
+                    this.metodoCrearFactura();
+                  } else {
+                    this._ElementService.pi_poBotonHabilitar('#btnCrearFactura');
+                  }
+                });
+              } else {
+                this.metodoCrearFactura();
+              }
             } else {
-              this.metodoCrearFactura();
+              this._ElementService.pi_poVentanaAlertaWarning('PIXEL', 'Lo sentismo, el ramal es requerido');
+              this._ElementService.pi_poBotonHabilitar('#btnCrearFactura');
             }
           } else {
             this._ElementService.pi_poVentanaAlertaWarning('PIXEL', 'Lo sentismo, la direccion de envio es requerida');
@@ -237,7 +246,7 @@ export class CrearFacturaComponent implements OnInit {
 
   limpiarCampos() {
     this.objFactura = new Factura('', 'ASUACOR', '',
-      '', '', '', '', '000');
+      '', '', '', '', '000', '');
   }
 
   cargarSeccionTarifaFactura() {
@@ -252,10 +261,9 @@ export class CrearFacturaComponent implements OnInit {
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
-          if  (respuesta.data != 0){
+          if (respuesta.data != 0) {
             this.listTarifasFactura = respuesta.data;
-          }else
-          {
+          } else {
             this.listTarifasFactura = [];
           }
 
@@ -343,50 +351,70 @@ export class CrearFacturaComponent implements OnInit {
     }
 
   }
-  limpiarCamposTarifa(){
+
+  limpiarCamposTarifa() {
     this.objTarifaFactura = new Tarifas('', '', '', '000', '');
   }
+
   seleccionarTarifa(tarifa) {
     this.objTarifaFactura = tarifa;
     this._ElementService.pi_poAlertaMensaje('Se selecciono la tarifa con codigo: ' + this.objTarifaFactura.id_tarifa, 'PIXEL');
   }
-  regresarPedido(){
+
+  regresarPedido() {
     $("#idSeccionTarifa").toggle(600);
     $("#seccionFactura").toggle(500);
   }
-  regresarUsuario(){
+
+  regresarUsuario() {
     $("#seccionFactura").toggle(500);
     $("#seccionUsuario").toggle(600);
   }
-  filtrarUsuario(){
-    if (this.filtro.trim() != ''){
-      this._UsuarioService.filtroUsuario(this.token,this.filtro).subscribe(
-        respuesta=>{
+
+  filtrarUsuario() {
+    if (this.filtro.trim() != '') {
+      this._UsuarioService.filtroUsuario(this.token, this.filtro).subscribe(
+        respuesta => {
           this._ElementService.pi_poValidarCodigo(respuesta);
-          if  (respuesta.status == 'success'){
-            if (respuesta.data != 0){
+          if (respuesta.status == 'success') {
+            if (respuesta.data != 0) {
               this.listUsuario = respuesta.data;
-              this.filtro='';
-            }else
-            {
-              this._ElementService.pi_poAlertaError('No se encontraron resultados','PIXEL');
+              this.filtro = '';
+            } else {
+              this._ElementService.pi_poAlertaError('No se encontraron resultados', 'PIXEL');
               this.listarUsuarios();
             }
-          }else
-          {
-            this._ElementService.pi_poVentanaAlertaWarning('PIXEL',respuesta.msg);
+          } else {
+            this._ElementService.pi_poVentanaAlertaWarning('PIXEL', respuesta.msg);
           }
 
-        },error2 => {
+        }, error2 => {
 
         }
       )
-    }else
-    {
-      this._ElementService.pi_poAlertaWarning('El campo filtro es requerido','PIXEL');
+    } else {
+      this._ElementService.pi_poAlertaWarning('El campo filtro es requerido', 'PIXEL');
       this.listarUsuarios();
     }
 
+  }
+
+  listarRamales() {
+    $("#loaderTablaMenu").show();
+    this._FacturaService.listarRamales(this.token).subscribe(
+      respuesta => {
+        this._ElementService.pi_poValidarCodigo(respuesta);
+        if (respuesta.status == 'success') {
+          this.listRamales = respuesta.data;
+          this._ElementService.pi_poAlertaSuccess(respuesta.msg, respuesta.code);
+          $("#loaderTablaMenu").hide();
+        } else {
+          $("#loaderTablaMenu").hide();
+        }
+      }, error2 => {
+
+      }
+    )
   }
 }
 

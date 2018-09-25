@@ -23,6 +23,23 @@ export class FacturaService{
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this._http.post(this.url + 'administrador/usuario/nuevaFactura',parametros, {headers: headers});
   }
+  cargarRamales(token,objRamal): Observable<any>{
+    let json = JSON.stringify(objRamal);
+    let parametros = 'token='+token+'&json='+json;
+    let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+    return this._http.post(this.url + '/administrador/usuario/nuevoRamal',parametros, {headers: headers});
+  }
+  actualizarRamales(token,objRamal): Observable<any>{
+    let json = JSON.stringify(objRamal);
+    let parametros = 'token='+token+'&json='+json;
+    let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+    return this._http.post(this.url + '/administrador/usuario/actualizarRamal',parametros, {headers: headers});
+  }
+  listarRamales(token): Observable<any>{
+    let parametros = 'token='+token;
+    let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+    return this._http.post(this.url + '/administrador/usuario/listarRamales',parametros, {headers: headers});
+  }
   actualizarFactura(token,objFactura): Observable<any>{
     let json = JSON.stringify(objFactura);
     let parametros = 'token='+token+'&json='+json;
@@ -50,6 +67,11 @@ export class FacturaService{
     let parametros = 'token='+token+'&fecha='+fechas;
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this._http.post(this.url + 'administrador/factura/generarFactura',parametros, {headers: headers});
+  }
+  cargarFacturasUsuarioUnitario(token,fechas,id): Observable<any>{
+    let parametros = 'token='+token+'&fecha='+fechas+'&id='+id;
+    let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+    return this._http.post(this.url + 'administrador/factura/generarFacturaUsuarioUnitario',parametros, {headers: headers});
   }
   generarFactura(token): Observable<any>{
     let parametros = 'token='+token;

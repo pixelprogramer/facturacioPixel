@@ -16,6 +16,8 @@ import {HomeAdministradorComponent} from "./components/administrador/home-admini
 import {GenerarFacturaComponent} from "./components/facturacion/generar-factura/generar-factura.component";
 import {CargarFacturaComponent} from "./components/facturacion/cargar-factura/cargar-factura.component";
 import {CobroFacturaComponent} from "./components/facturacion/cobro-factura/cobro-factura.component";
+import {CargarFacturaUnitarioComponent} from "./components/facturacion/cargar-factura-unitario/cargar-factura-unitario.component";
+import {CargarRamalesComponent} from "./components/facturacion/cargar-ramales/cargar-ramales.component";
 
 
 
@@ -35,6 +37,8 @@ const appRoutes: Routes = [
   {path: 'validarUsuario', component: ValidarPaginaComponent},
   {path: 'administrador/factura/cargarFacturas',component:CargarFacturaComponent},
   {path: 'administrador/factura/cobrarFactura',component:CobroFacturaComponent},
+  {path: 'administrador/factura/cargarFacturaUsuario',component: CargarFacturaUnitarioComponent},
+  {path: 'administrador/factura/cargarRamales',component: CargarRamalesComponent},
   {path: '**', component: ValidarPaginaComponent}
 
 ];
