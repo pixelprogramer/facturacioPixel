@@ -6,7 +6,10 @@ $app->post('/administrador/listarFacturaUsuario', function () use ($app) {
     $token = $app->request->post('token', null);
     if ($token != null) {
         $id_usuario = $app->request->post('id_usuario', null);
-        $sql = "select fac.* from facturacion.factura fac where fac.id_usuario_factura_fk = '$id_usuario';";
+        $sql = "select fac.*,rf.descripcion_ramal_factura from facturacion.factura fac 
+                left join  configuracion.ramal_factura rf on 
+                fac.fk_ramal_factura_factura_id=rf.id_ramal_factura 
+                where fac.id_usuario_factura_fk = '$id_usuario';";
         $r = $conexion->consultaComplejaAso($sql);
         $data = [
             'code' => 'LTE-001',
@@ -41,9 +44,9 @@ $app->post('/administrador/usuario/nuevaFactura', function () use ($app) {
             $id_configuracion_factura = $r['id_configuracion_factura'];
             $sql = "INSERT INTO facturacion.factura(
                     observacion_factura, codigo_medidor_factura, direccion_factura, 
-                    numero_tapa_factura, id_usuario_factura_fk, id_configuracion_factura_fk, estado_factura)
+                    numero_tapa_factura, id_usuario_factura_fk, id_configuracion_factura_fk, estado_factura,fk_ramal_factura_factura_id)
                     VALUES ( '$observacion_factura', '$codigo_medidor_factura',
-                     '$direccion_factura', '$numero_tapa_factura', '$id_usuario_factura_fk', '$id_configuracion_factura', '$estado_factura');";
+                     '$direccion_factura', '$numero_tapa_factura', '$id_usuario_factura_fk', '$id_configuracion_factura', '$estado_factura','$fk_ramal_factura_factura_id');";
             $conexon->consultaSimple($sql);
             $data = [
                 'code' => 'LTE-001'
@@ -76,8 +79,10 @@ $app->post('/administrador/usuario/actualizarFactura', function () use ($app) {
             $numero_tapa_factura = (isset($parametros->numero_tapa_factura)) ? $parametros->numero_tapa_factura : null;
             $id_usuario_factura_fk = (isset($parametros->id_usuario_factura_fk)) ? $parametros->id_usuario_factura_fk : null;
             $estado_factura = (isset($parametros->estado_factura)) ? $parametros->estado_factura : null;
+            $fk_ramal_factura_factura_id = (isset($parametros->fk_ramal_factura_factura_id)) ? $parametros->fk_ramal_factura_factura_id : null;
             $sql = "UPDATE facturacion.factura
                     SET observacion_factura='$observacion_factura', codigo_medidor_factura='$codigo_medidor_factura', direccion_factura='$direccion_factura', 
+                    fk_ramal_factura_factura_id='$fk_ramal_factura_factura_id',
                     numero_tapa_factura='$numero_tapa_factura', estado_factura='$estado_factura'
                     WHERE id_factura='$id_factura';";
             $conexon->consultaSimple($sql);
@@ -282,6 +287,7 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
             $usuario = $conexon->consultaComplejaAso($sql);
             $arregloFactura = array();
             $validaEntrada = 1;
+            $ramal = $app->request->post('id', null);
             for ($i = 0; $i < count($usuario); $i++) {
                 $idUsuario = $usuario[$i]['id_usuario'];
                 $sql = "select * from facturacion.factura fa where fa.id_usuario_factura_fk = '$idUsuario'";
@@ -289,11 +295,21 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
                 if ($rFactura != 0) {
                     for ($y = 0; $y < count($rFactura); $y++) {
                         $idFactura = $rFactura[$y]['id_factura'];
-                        $sql = "select * from facturacion.registro_factura rf 
-                        inner join facturacion.factura fa on rf.id_factura_registro_factura_fk = fa.id_factura 
-                        inner join seguridad.usuario usu on fa.id_usuario_factura_fk = usu.id_usuario 
-                        where rf.id_usuario_registro_factura_fk = '$idUsuario' and fa.id_factura ='$idFactura' and rf.estado_factura ='SINPAGAR'
-                        ORDER BY  rf.fecha_inicial_facturado desc";
+                        if ($ramal == 'todo' || $ramal == '' || $ramal == null) {
+                            $sql = "select * from facturacion.registro_factura rf 
+                                    inner join facturacion.factura fa on rf.id_factura_registro_factura_fk = fa.id_factura 
+                                    inner join seguridad.usuario usu on fa.id_usuario_factura_fk = usu.id_usuario
+                                    left join configuracion.ramal_factura rafa on rafa.id_ramal_factura=fa.fk_ramal_factura_factura_id 
+                                    where  rf.id_usuario_registro_factura_fk = '$idUsuario' and fa.id_factura ='$idFactura' and rf.estado_factura ='SINPAGAR'
+                                    ORDER BY  rf.fecha_inicial_facturado desc";
+                        } else {
+                            $sql = "select * from facturacion.registro_factura rf 
+                                    inner join facturacion.factura fa on rf.id_factura_registro_factura_fk = fa.id_factura 
+                                    inner join seguridad.usuario usu on fa.id_usuario_factura_fk = usu.id_usuario
+                                    left join configuracion.ramal_factura rafa on rafa.id_ramal_factura=fa.fk_ramal_factura_factura_id 
+                                    where  rafa.id_ramal_factura='$ramal' and rf.id_usuario_registro_factura_fk = '$idUsuario' and fa.id_factura ='$idFactura' and rf.estado_factura ='SINPAGAR'
+                                    ORDER BY  rf.fecha_inicial_facturado desc";
+                        }
                         $registros = $conexon->consultaComplejaAso($sql);
                         if ($registros != 0) {
                             $validaEntrada = 0;
@@ -328,6 +344,7 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
                                 'fecha_inicial' => $registros[0]['fecha_inicial_facturado'],
                                 'fecha_pago' => $registros[0]['fecha_pago_factura'],
                                 'fecha_corte' => $registros[0]['fecha_final_factura'],
+                                'ramal' => $registros[0]['descripcion_ramal_factura'],
                                 'direccion_entrega' => $registros[0]['direccion_factura'],
                                 'codigo_medidor' => $registros[0]['codigo_medidor_factura'],
                                 'codigo_registro_factura' => $registros[0]['codigo_registro_factura'],
@@ -677,10 +694,10 @@ $app->post('/administrador/usuario/listarRamales', function () use ($app) {
         $validacionToken = $helper->authCheck($token);
         if ($validacionToken == true) {
             $sql = "select * from configuracion.ramal_factura";
-            $r=$conexon->consultaComplejaAso($sql);
+            $r = $conexon->consultaComplejaAso($sql);
             $data = [
                 'code' => 'LTE-001',
-                'data'=>$r
+                'data' => $r
             ];
         } else {
             $data = [
@@ -699,6 +716,7 @@ function generarReportePDF($arregloFactura)
 
     $route = __DIR__ . '../../../public/pdf/';
     $img = __DIR__ . '../../../public/imagenes_estandar/logo25%factura.png';
+    $imgTijera = __DIR__ . '../../../public/imagenes_estandar/tijeras.png';
     $style = array(
         'position' => '',
         'align' => 'C',
@@ -729,21 +747,21 @@ function generarReportePDF($arregloFactura)
         $pdf->Image($img, '', '', 190, 87, '', '', 'T', false, 300, '', false,
             false, 0, false, false, true);
         $pdf->SetXY($X, $Y);
-        $pdf->Cell(190, 87, '', 1, 0, '', 0);
+        $pdf->Cell(190, 130, '', 1, 0, '', 0);
         $pdf->SetXY($X, $Y);
-        $pdf->write1DBarcode($arregloFactura[$i]['codigo_registro_factura'], 'C128', '', '', '', 12, 0.5, $style, 'N');
+        $pdf->write1DBarcode($arregloFactura[$i]['codigo_registro_factura'], 'C128', '', '', '', 20, 0.5, $style, 'N');
         $pdf->SetFont('times', 'B', 16);
         $pdf->SetTextColor(0, 115, 170);
         $pdf->SetXY($X, $Y);
-        $pdf->Cell(190, 10, 'ASUACOR', 1, 0, 'C', 0);
+        $pdf->Cell(190, 20, 'ASUACOR', 1, 0, 'C', 0);
         $pdf->SetX($X);
-        $pdf->SetXY($pdf->GetX(), $pdf->GetY() + 10);
+        $pdf->SetXY($pdf->GetX(), $pdf->GetY() + 20);
         $pdf->SetFont('times', 'B', 11);
         $pdf->SetTextColor(0, 0, 0);
         $pdf->Cell(95, 5, 'Nombres: ' . $arregloFactura[$i]['nombre'] . ' ' . $arregloFactura[$i]['apellido'], 1, 0, '', 0);
         $pdf->SetX($pdf->GetX());
         $pdf->SetFont('times', 'B', 11);
-        $pdf->Cell(95, 5, 'Direccion: ' . $arregloFactura[$i]['direccion'], 1, 0, '', 0);
+        $pdf->Cell(95, 5, 'Ramal: ' . $arregloFactura[$i]['ramal'], 1, 0, '', 0);
         $pdf->SetY($pdf->GetY() + 5);
         $pdf->SetX($pdf->GetX() + 95);
         $pdf->SetFont('times', 'B', 11);
@@ -781,6 +799,42 @@ function generarReportePDF($arregloFactura)
         $pdf->SetFont('times', 'B', 14);
         $pdf->SetTextColor(254, 92, 92);
         $pdf->Cell(95, 10, 'Total factura: ' . number_format($arregloFactura[$i]['total_pagar_factura'], 0), 1, 0, '', 0);
+        $pdf->SetXY(10,$pdf->GetY()+20);
+
+        $pdf->Line($pdf->GetX(), $pdf->GetY(), $pdf->GetX()+190, $pdf->GetY());
+        $pdf->SetXY($pdf->GetX()+1,$pdf->GetY()-3);
+        $pdf->Image($imgTijera, '', '', 3, 3, '', '', 'T', false, 300, '', false,
+            false, 0, false, false, true);
+        $pdf->SetY($pdf->GetY()+5);
+        $pdf->SetTextColor(0, 115, 170);
+        $pdf->SetFont('times', 'B', 10);
+        $pdf->Cell(190,5,'ASUACOR-Desprendible',1,1,'C');
+        $pdf->SetFont('times', 'B', 9);
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->SetXY(10,$pdf->GetY());
+        $pdf->Cell(95,3,'Codigo Factura: '.$arregloFactura[$i]['codigo_registro_factura'],1,1,'L');
+        $pdf->SetXY(10,$pdf->GetY());
+        $pdf->Cell(95,3,'Nombre: '. $arregloFactura[$i]['nombre'] . ' ' . $arregloFactura[$i]['apellido'],1,1,'L');
+        $pdf->SetXY(10,$pdf->GetY());
+        $pdf->Cell(95,3,'Ramal: '. $arregloFactura[$i]['ramal'],1,1,'L');
+        $pdf->SetXY(10,$pdf->GetY());
+        $pdf->Cell(95,3,'Fecha de corte: '. $arregloFactura[$i]['fecha_corte'],1,1,'L');
+        $pdf->SetXY(10,$pdf->GetY());
+        $pdf->Cell(95,3,'Cantidad facturas cobradas: '. $arregloFactura[$i]['total_facturas_cobradas'],1,1,'L');
+        $pdf->SetXY(10,$pdf->GetY());
+        $pdf->SetTextColor(254, 92, 92);
+        $pdf->Cell(95,3,'Total factura: '. number_format($arregloFactura[$i]['total_pagar_factura']),1,1,'L');
+        $pdf->SetTextColor(0, 0, 0);
+        $pdf->SetXY(10,$pdf->GetY());
+        $pdf->Cell(95,13,'',1,0,'L');
+        $pdf->SetXY(10,$pdf->GetY()+9);
+        $pdf->SetFont('times', 'B', 5);
+        $pdf->Cell(95,5,'ESPACIO PARA SELLO Y FIRMA DEL CAJERO: ',0,0,'C');
+        $pdf->SetXY(100,$pdf->GetY()-25);
+        $pdf->write1DBarcode($arregloFactura[$i]['codigo_registro_factura'], 'C128', '', '', '', 30, 1.0, $style, 'N');
+
+        /*
+         *
         $pdf->SetY($pdf->GetY() + 10);
         $pdf->SetX($pdf->GetX() + 88);
         $pdf->SetFont('times', 'B', 14);
@@ -788,16 +842,17 @@ function generarReportePDF($arregloFactura)
         $pdf->write1DBarcode($arregloFactura[$i]['codigo_registro_factura'], 'C128', '', '', '', 19, 1.0, $style, 'N');
         $pdf->SetFont('times', 'B', 8);
         $pdf->SetTextColor(0, 0, 0);
-        $pdf->SetXY(105,$pdf->GetY()-5);
-        $pdf->Cell(5,5,'Nombre: '.$arregloFactura[$i]['nombre'] . ' ' . $arregloFactura[$i]['apellido'],0);
-        $pdf->SetXY(105,$pdf->GetY()+3);
-        $pdf->Cell(5,5,'Total factura: '.number_format($arregloFactura[$i]['total_pagar_factura'], 0),0);
+        $pdf->SetXY(105, $pdf->GetY() - 5);
+        $pdf->Cell(5, 5, 'Nombre: ' . $arregloFactura[$i]['nombre'] . ' ' . $arregloFactura[$i]['apellido'], 0);
+        $pdf->SetXY(105, $pdf->GetY() + 3);
+        $pdf->Cell(5, 5, 'Total factura: ' . number_format($arregloFactura[$i]['total_pagar_factura'], 0), 0);
+        */
         //Pintar detalles de la factura
-        $pdf->SetXY($X, $Y + 15);
+        $pdf->SetXY($X, $Y + 25);
         $pdf->SetFont('times', 'B', 8);
         $pdf->SetTextColor(0, 115, 170);
         $pdf->Cell(95, 5, 'Detalles', 1, 0, 'C', 0);
-        $pdf->SetXY($X, $Y + 18);
+        $pdf->SetXY($X, $Y + 28);
         $contador = 0;
         $pdf->SetY($pdf->GetY() + 3);
         $pdf->Cell(25, 1, 'Producto', 0, 0, 'L', 0);
@@ -824,9 +879,9 @@ function generarReportePDF($arregloFactura)
             }
         }
         $X = 10;
-        $Y += 89;
+        $Y += 133;
         $contadorFacturas++;
-        if ($contadorFacturas == 3) {
+        if ($contadorFacturas == 2) {
             $X = 10;
             $Y = 10;
             $contadorFacturas = 0;

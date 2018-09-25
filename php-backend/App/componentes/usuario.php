@@ -76,9 +76,10 @@ $app->post('/seguridad/crearUsuario', function () use ($app) {
                         $fecha_actualizacion = date('Y-m-d H:i');
                         $sql = "INSERT INTO seguridad.usuario(
                          documento_usuario, nombre_usuario, apellido_usuario, 
-                         telefono_usuario, correo_usuario, id_rol_fk_usuario, estado_usuario,contrasena_usuario, fecha_creacion_usuario, fecha_actualizacion_usuario,direccion_usuario)
+                         telefono_usuario, correo_usuario, id_rol_fk_usuario, estado_usuario,contrasena_usuario, fecha_creacion_usuario, fecha_actualizacion_usuario,direccion_usuario,fk_ramal_factura_usuario_id)
                         VALUES ( '$documento', '$nombre', '$apellido', 
-                        '$telefono', '$correo', '$id_rol_fk', '$estado_usuario','$pwd','$fecha_creacion','$fecha_actualizacion','$direccion_usuario') returning id_usuario;";
+                        '$telefono', '$correo', '$id_rol_fk', '$estado_usuario','$pwd','$fecha_creacion','$fecha_actualizacion',
+                        '$direccion_usuario','$fk_ramal_factura_usuario_id') returning id_usuario;";
                         $r=$conexion->consultaComplejaNorAso($sql);
                         $sql = "select * from configuracion.configuracion_factura";
                         $r3 = $conexion->consultaComplejaNorAso($sql);
@@ -93,7 +94,7 @@ $app->post('/seguridad/crearUsuario', function () use ($app) {
                         $sql = "INSERT INTO facturacion.factura(
                              observacion_factura, codigo_medidor_factura, direccion_factura, numero_tapa_factura, 
                             id_usuario_factura_fk, id_configuracion_factura_fk, estado_factura,fk_ramal_factura_factura_id)
-                            VALUES ('ASUACOR', 'No encontrado', '$direccion_usuario', 'No encontrado', '$idUsuario', '$id_configuracion_factura', 'ACTIVO','$ramaamal_factura_usuario_id') returning id_factura;";
+                            VALUES ('ASUACOR', 'No encontrado', '$direccion_usuario', 'No encontrado', '$idUsuario', '$id_configuracion_factura', 'ACTIVO','$fk_ramal_factura_usuario_id') returning id_factura;";
                         $r = $conexion->consultaComplejaNorAso($sql);
                         $id_factura = $r['id_factura'];
                         $sql = "INSERT INTO configuracion.tarifas(
