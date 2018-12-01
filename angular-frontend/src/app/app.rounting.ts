@@ -18,6 +18,8 @@ import {CargarFacturaComponent} from "./components/facturacion/cargar-factura/ca
 import {CobroFacturaComponent} from "./components/facturacion/cobro-factura/cobro-factura.component";
 import {CargarFacturaUnitarioComponent} from "./components/facturacion/cargar-factura-unitario/cargar-factura-unitario.component";
 import {CargarRamalesComponent} from "./components/facturacion/cargar-ramales/cargar-ramales.component";
+import {CargarAbonoFacturaComponent} from "./components/facturacion/cargar-abono-factura/cargar-abono-factura.component";
+
 
 
 
@@ -39,6 +41,7 @@ const appRoutes: Routes = [
   {path: 'administrador/factura/cobrarFactura',component:CobroFacturaComponent},
   {path: 'administrador/factura/cargarFacturaUsuario',component: CargarFacturaUnitarioComponent},
   {path: 'administrador/factura/cargarRamales',component: CargarRamalesComponent},
+  {path: 'administrador/factura/cargarAbono',component: CargarAbonoFacturaComponent},
   {path: '**', component: ValidarPaginaComponent}
 
 ];

@@ -13,7 +13,7 @@ export class CrearRolComponent implements OnInit {
   public objRol: Rol;
   public listRol: Array<Rol>;
   public token: any;
-
+  position = "top-right";
   constructor(private _ElementService: ElementsService,
               private _UsuarioService: UsuarioService) {
     this.objRol = new Rol('000', '',

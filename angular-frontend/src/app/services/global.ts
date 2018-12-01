@@ -10,7 +10,7 @@ export var GLOBAL = {
   //urlFiles: 'http://192.168.0.12/ltesoluciones/php-backend/App/public'
 
   //localproduccion Server prueba
-  //url: 'http://192.168.1.15/php-backend/index.php/',
+ // url: 'http://192.168.1.15/php-backend/index.php/',
   //urlFiles: 'http://192.168.1.15/php-backend/App/public'
 
   //Local Desarrollo nelson

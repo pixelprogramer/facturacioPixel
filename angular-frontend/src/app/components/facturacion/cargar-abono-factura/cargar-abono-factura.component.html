@@ -1,0 +1,117 @@
+<div style="position: absolute;
+    z-index: 1000000000;
+    width: 100%;
+    height: 100%;
+    background: #f3f3f382;
+    text-align: center;" id="loader" *ngIf="loader!=0">
+  <div>
+    <img style="
+    width: 18%;
+    height: 50%;
+    margin-top: 13%;" src="./assets/images/logo_loader.gif"/>
+  </div>
+</div>
+
+<ng2-toasty [position]="position"></ng2-toasty>
+<app-card title="Cargar abono">
+  <div class="row">
+    <div class="col-md-3">
+      <h4 class="sub-title">Usuario</h4>
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Filtrar por documento o nombre " disabled value="{{userSelect}}">
+        <div class="input-group-append">
+          <button class="btn btn-primary input-group-text" type="button"
+                  (click)="[listarUsuarios(),modalSeleccionarUsuario.show()]"><a style="font-size: 5px">🔎</a>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <h4 class="sub-title">Total abono</h4>
+      <input class="form-control" #descripcionRamal="ngModel"
+             [ngStyle]="{'border': objAbonoFactura.total_abono_factura == '000' ? 'red solid 1px' : '#577928 solid 1px'}"
+             type="number" [(ngModel)]="objAbonoFactura.total_abono_factura"
+             placeholder="Total abono">
+    </div>
+    <div class="col-sm-3 col-md-3">
+      <h4 class="sub-title">Tipo de abono</h4>
+      <select class="form-control"
+              [ngStyle]="{'border': objAbonoFactura.tipo_abono == '000' ? 'red solid 1px' : '#577928 solid 1px'}"
+              [(ngModel)]="objAbonoFactura.tipo_abono">
+        <option value="000">Seleccione</option>
+        <option value="efectivo">Efectivo</option>
+        <option value="abono">Abono</option>
+      </select>
+    </div>
+  </div>
+  <div class="row" style="margin-top: 10px;float: right;">
+    <div class="col-md-12" >
+      <button class="btn btnPropio" (click)="new()">Cargar abono</button>
+    </div>
+  </div>
+
+</app-card>
+
+<app-modal-basic #modalSeleccionarUsuario [dialogClass]="'modal-lg'">
+  <div class="app-modal-header">
+    <h4 class="modal-title">¿Seleccionar usuario?</h4>
+    <button type="button" class="close basic-close" (click)="modalSeleccionarUsuario.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="app-modal-body">
+    <div class="col-sm-12" style="margin-top: 10px">
+      <div class="input-group">
+        <input type="text" class="form-control" placeholder="Filtrar por documento o nombre "
+               [(ngModel)]="filtro">
+        <div class="input-group-append">
+          <button class="btn btn-primary input-group-text" type="button"
+                  (click)="filtrarUsuario()"><a style="font-size: 5px">🔎</a>
+          </button>
+        </div>
+      </div>
+      <div class="dataTables_scrollBody"
+           style="position: relative; overflow: auto; max-height: 400px; width: 100%; margin-top: 10px">
+        <table class="table table-striped table-bordered nowrap dataTable" role="grid"
+               aria-describedby="scr-vrt-dt_info" style="width: 100%;">
+          <thead>
+          <tr role="row" style="height: 0px;">
+            <th style="width: 144.45px;">
+              Documento
+            </th>
+            <th style="width: 144.45px;">
+              Nombres
+            </th>
+            <th style="width: 144.45px;">
+              Apellido
+            </th>
+            <th style="width: 70px;">
+              Telefono
+            </th>
+            <th style="width: 70px;">
+              Correo
+            </th>
+            <th style="width: 30px;">
+              Estado
+            </th>
+
+          </tr>
+          </thead>
+
+          <tbody>
+          <tr *ngFor="let usuario of listUsuario" role="row" class="odd Tablas filaTabla"
+              (click)="[selectUser(usuario),modalSeleccionarUsuario.hide()]">
+            <td>{{usuario.documento_usuario}}</td>
+            <td>{{usuario.nombre_usuario}}</td>
+            <td>{{usuario.apellido_usuario}}</td>
+            <td>{{usuario.telefono_usuario}}</td>
+            <td>{{usuario.correo_usuario}}</td>
+            <td>{{usuario.estado_usuario}}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</app-modal-basic>

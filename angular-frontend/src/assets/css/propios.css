@@ -88,6 +88,9 @@
   border:  1px #7FB9D4 solid !important;
 }
 .btnPropio{
-  background: #4297C0;
-  color: white;
+  background: #4297C0 !important;
+  color: white !important;
+  padding: 5px !important;
+  margin: 8px !important;
+  font-size: 13px !important;
 }

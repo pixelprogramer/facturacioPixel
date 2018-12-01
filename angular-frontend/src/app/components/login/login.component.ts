@@ -14,6 +14,7 @@ import {appRoutingProviders} from "../../app.rounting";
 export class LoginComponent implements OnInit {
   public ObjUser: Usuario;
   public userIdentity: any;
+  position = "top-right";
   constructor(private _loginService:LoginService, private _ElementService: ElementsService,private _Router: Router,) {
     this.ObjUser =  new Usuario('','','','','','',
       '','','','','','','','');

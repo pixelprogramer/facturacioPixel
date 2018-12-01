@@ -25,6 +25,9 @@ import { CargarFacturaComponent } from './components/facturacion/cargar-factura/
 import { CobroFacturaComponent } from './components/facturacion/cobro-factura/cobro-factura.component';
 import { CargarFacturaUnitarioComponent } from './components/facturacion/cargar-factura-unitario/cargar-factura-unitario.component';
 import { CargarRamalesComponent } from './components/facturacion/cargar-ramales/cargar-ramales.component';
+import {CrearRolComponent} from "./components/administradorSistemas/crear-rol/crear-rol.component";
+import { CargarAbonoFacturaComponent } from './components/facturacion/cargar-abono-factura/cargar-abono-factura.component';
+
 
 
 
@@ -46,8 +49,10 @@ import { CargarRamalesComponent } from './components/facturacion/cargar-ramales/
     GenerarFacturaComponent,
     CargarFacturaComponent,
     CobroFacturaComponent,
+    CrearRolComponent,
     CargarFacturaUnitarioComponent,
-    CargarRamalesComponent
+    CargarRamalesComponent,
+    CargarAbonoFacturaComponent
   ],
   imports: [
     BrowserModule,

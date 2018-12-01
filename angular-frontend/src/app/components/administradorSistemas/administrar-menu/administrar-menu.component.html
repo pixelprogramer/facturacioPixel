@@ -1,8 +1,7 @@
 <ng2-toasty [position]="position"></ng2-toasty>
 
 <div id="pcoded" class="pcoded iscollapsed" theme-layout="vertical" vertical-placement="left" vertical-layout="wide"
-     [attr.pcoded-device-type]="deviceType" [attr.vertical-nav-type]="verticalNavType"
-     [attr.vertical-effect]="verticalEffect" vnavigation-view="view1">
+    vnavigation-view="view1">
   <div class="pcoded-overlay-box"></div>
   <div class="pcoded-container navbar-wrapper">
     <nav class="navbar header-navbar pcoded-header" header-theme="theme4" pcoded-header-position="fixed">
@@ -24,7 +23,7 @@
              pcoded-header-position="fixed">
           <div class="sidebar_toggle"><a href="javascript:;"><i class="icon-close icons"></i></a></div>
           <div class="pcoded-inner-navbar main-menu" appAccordion>
-            <perfect-scrollbar [style.max-width]="'100%'" [style.max-height]="'calc(100vh - 56px)'" [config]="config">
+            <perfect-scrollbar [style.max-width]="'100%'" [style.max-height]="'calc(100vh - 56px)'" >
               <div *ngFor="let cabezera of listMenuTodo">
 
                 <div class="pcoded-navigatio-lavel styiloCabezera" menu-title-theme="theme5" (click)="seleccionarEncabezado(cabezera)">{{cabezera.descripcion_cabezera}}
@@ -111,7 +110,7 @@
                           <div class="sidebar_toggle"><a href="javascript:;"><i class="icon-close icons"></i></a></div>
                           <div class="pcoded-inner-navbar main-menu" appAccordion>
                             <perfect-scrollbar [style.max-width]="'100%'" [style.max-height]="'calc(100vh - 56px)'"
-                                               [config]="config">
+                                               >
                               <ul *ngFor="let sub of listMenu" class="pcoded-item pcoded-left-item" item-border="none"
                                   item-border-style="solid"
                                   subitem-border="solid" appAccordionLink group="dashboard">

@@ -3,7 +3,7 @@
   <div class="row">
     <div class="col-md-12" style="text-align: center">
       <h4 class="sub-title">Seleccione una fecha</h4>
-      <ngb-datepicker #dp [(ngModel)]="model" (navigate)="date = $event.next"></ngb-datepicker>
+      <ngb-datepicker #dp [(ngModel)]="model" ></ngb-datepicker>
       <pre>Cargar facturas del mes : {{ parserFormatter.format(model) }}</pre>
       <button class="btn btnPropio" style="width: 100%" id="btnGenerarReporte" (click)="cargarFactura()">Cargar facturas en la fecha: {{parserFormatter.format(model)}}
       </button>
