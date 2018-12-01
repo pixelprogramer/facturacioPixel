@@ -717,6 +717,39 @@ $app->post('/administrador/usuario/listarRamales', function () use ($app) {
     }
     echo $helper->checkCode($data);
 });
+$app->post('/administrador/abono/cargarAbono', function () use ($app) {
+    $helper = new helper();
+    $conexon = new conexPGSeguridad();
+    $token = $app->request->post('token', null);
+    if ($token != null) {
+        $validacionToken = $helper->authCheck($token);
+        if ($validacionToken == true) {
+            $json = $app->request->post('json', null);
+            $id_user = $app->request->post('id_user', null);
+            $parametros = json_decode($json);
+            $total_abono_factura = (isset($parametros->total_abono_factura)) ? $parametros->total_abono_factura : null;
+            $tipo_abono = (isset($parametros->tipo_abono)) ? $parametros->tipo_abono : null;
+            $fecha_creacion = date('Y-m-d H:i');
+            $sql = "INSERT INTO facturacion.abonos_factura(
+                    total_abono_factura,fecha_creacion_abono_factura, 
+                     estado_abono_factura, tipo_abono, id_usuario_fk_abono_factura)
+                    VALUES ( '$total_abono_factura', '$fecha_creacion', 'ACTIVO', '$tipo_abono', '$id_user');";
+            $conexon->consultaSimple($sql);
+            $data = [
+                'code' => 'LTE-001'
+            ];
+        } else {
+            $data = [
+                'code' => 'LTE-013'
+            ];
+        }
+    } else {
+        $data = [
+            'code' => 'LTE-013',
+        ];
+    }
+    echo $helper->checkCode($data);
+});
 function generarReportePDF($arregloFactura)
 {
 
