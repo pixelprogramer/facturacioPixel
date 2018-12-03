@@ -250,7 +250,7 @@ $app->post('/administrador/factura/generarFactura', function () use ($app) {
                              fecha_final_factura, json_tarifas)
                             VALUES ('$id_usuario','SINPAGAR', '$fecha_creacion', '$fechaPagar', '$fecha_factura', '$id_factura', '$fechaCorte', '$jsonTarifa') returning id_registro_factura;";
                             $r = $conexon->consultaComplejaNorAso($sql);
-                            $codigoFactura = $fechFac[0] . $fechFac[1] . $usuario[$i]['id_usuario'] . $r['id_registro_factura'];
+                            $codigoFactura = 'F-' . $fechFac[0] . $fechFac[1] . $usuario[$i]['id_usuario'] . $r['id_registro_factura'];
                             $id_registro_factura = $r['id_registro_factura'];
                             $sql = "update facturacion.registro_factura set codigo_registro_factura='$codigoFactura' where id_registro_factura = '$id_registro_factura'";
                             $conexon->consultaSimple($sql);
@@ -608,7 +608,7 @@ $app->post('/administrador/factura/generarFacturaUsuarioUnitario', function () u
                              fecha_final_factura, json_tarifas)
                             VALUES ('$id_usuario','SINPAGAR', '$fecha_creacion', '$fechaPagar', '$fecha_factura', '$id_factura', '$fechaCorte', '$jsonTarifa') returning id_registro_factura;";
                         $r = $conexon->consultaComplejaNorAso($sql);
-                        $codigoFactura = $fechFac[0] . $fechFac[1] . $usuario['id_usuario'] . $r['id_registro_factura'];
+                        $codigoFactura = 'F-' . $fechFac[0] . $fechFac[1] . $usuario['id_usuario'] . $r['id_registro_factura'];
                         $id_registro_factura = $r['id_registro_factura'];
                         $sql = "update facturacion.registro_factura set codigo_registro_factura='$codigoFactura' where id_registro_factura = '$id_registro_factura'";
                         $conexon->consultaSimple($sql);
@@ -733,11 +733,163 @@ $app->post('/administrador/abono/cargarAbono', function () use ($app) {
             $sql = "INSERT INTO facturacion.abonos_factura(
                     total_abono_factura,fecha_creacion_abono_factura, 
                      estado_abono_factura, tipo_abono, id_usuario_fk_abono_factura)
-                    VALUES ( '$total_abono_factura', '$fecha_creacion', 'ACTIVO', '$tipo_abono', '$id_user');";
+                    VALUES ( '$total_abono_factura', '$fecha_creacion', 'ACTIVO', '$tipo_abono', '$id_user') returning id_abono_factura;";
+            $r = $conexon->consultaComplejaNorAso($sql);
+            $id_abono_factura = $r['id_abono_factura'];
+            $fecha_codigo = date('y-m-d');
+            $arrayFecha = explode('-', $fecha_codigo);
+            $codigoAbono = 'A-' . $arrayFecha[0] . $arrayFecha[1] . $id_user . $id_abono_factura;
+            $sql = "update facturacion.abonos_factura set codigo_abono_factura = '$codigoAbono' WHERE 
+                    id_abono_factura = '$id_abono_factura'";
             $conexon->consultaSimple($sql);
             $data = [
                 'code' => 'LTE-001'
             ];
+        } else {
+            $data = [
+                'code' => 'LTE-013'
+            ];
+        }
+    } else {
+        $data = [
+            'code' => 'LTE-013',
+        ];
+    }
+    echo $helper->checkCode($data);
+});
+$app->post('/administrador/abono/efectuarAbono', function () use ($app) {
+    $helper = new helper();
+    $conexon = new conexPGSeguridad();
+    $token = $app->request->post('token', null);
+    if ($token != null) {
+        $validacionToken = $helper->authCheck($token);
+        if ($validacionToken == true) {
+            $json = $app->request->post('json', null);
+            $parametros = json_decode($json);
+            $codigo_abono_factura = (isset($parametros->codigo_abono_factura)) ? $parametros->codigo_abono_factura : null;
+            $fecha_creacion = date('Y-m-d H:i');
+            $sql = "select * from facturacion.abonos_factura  a_f
+                    inner join seguridad.usuario usu on a_f.id_usuario_fk_abono_factura = usu.id_usuario 
+                    where a_f.codigo_abono_factura = '$codigo_abono_factura' and a_f.estado_abono_factura = 'ACTIVO';";
+            $r = $conexon->consultaComplejaNorAso($sql);
+            $id_usuario = $r['id_usuario_fk_abono_factura'];
+            $id_abono = $r['id_abono_factura'];
+            $sql = "select * from facturacion.registro_factura rf 
+                    inner join facturacion.factura f on rf.id_factura_registro_factura_fk = f.id_factura
+                    where rf.id_usuario_registro_factura_fk = '$id_usuario' and rf.estado_factura = 'SINPAGAR' 
+                    order by rf.fecha_inicial_facturado asc";
+            $r2 = $conexon->consultaComplejaAso($sql);
+            if ($r2 != 0) {
+                $validacionSalida = 0;
+                $validacionEntrada = 0;
+                $contador = 0;
+                $id_registro = null;
+                while ($validacionSalida == 0) {
+
+                    if ($contador <= count($r2)) {
+                        $json_tarifas_factura = json_decode($r2[$contador]['json_tarifas'], true);
+                        if ($json_tarifas_factura['totalTarifa'] > 0) {
+                            $validacionSalida = 1;
+                            $validacionEntrada = 1;
+                        } else {
+                            $contador++;
+                        }
+                    } else {
+                        $validacionSalida = 1;
+                    }
+
+                }
+                if ($validacionEntrada == 1) {
+                    $total_abono = $r['total_abono_factura'];
+                    $id_registro = $r2[$contador]['id_registro_factura'];
+                    if (count($r2) == 1) {
+                        if ($r2[$contador]['json_cargue_factura'] != '' && $r2[$contador]['json_cargue_factura'] != null) {
+                            $result = $json_tarifas_factura['totalTarifa'] - $total_abono;
+                            $concatenar = '';
+                            if ($result < 0) {
+                                $json_tarifas_factura['totalTarifa'] = 0;
+                                $concatenar = ", estado_factura='PAGADO'";
+                            } else {
+                                $json_tarifas_factura['totalTarifa'] = $result;
+                            }
+                            $jt = json_encode($json_tarifas_factura);
+                            $sql = "UPDATE facturacion.registro_factura
+                                    SET  json_tarifas='$jt' " . $concatenar . "
+                                    WHERE id_registro_factura='$id_registro';";
+                            $conexon->consultaSimple($sql);
+                            $json_cargue_factura = json_decode($r2[$contador]['json_cargue_factura'], true);
+                            $codigo_factura = $r2[$contador]['codigo_registro_factura'];
+                            for ($i = 0; $i < count($json_cargue_factura); $i++) {
+                                if ($codigo_factura == $json_cargue_factura[$i]['codigoFactura']) {
+                                    $total_tarifa = $json_cargue_factura[$i]['detalle']['totalTarifa'];
+                                    $tarifa = $json_cargue_factura[$i]['detalle']['totalTarifa'];
+                                    if ($result < 0) {
+                                        $json_cargue_factura[$i]['detalle']['totalTarifa'] = 0;
+                                        $result = $result * -1;
+                                        $sql = "UPDATE facturacion.abonos_factura
+                                                SET  total_factura_abono_factura='$tarifa', 
+                                                restante_abono_factura='$result', fecha_creacion_abono_factura='$fecha_creacion', 
+                                                id_registro_factura_fk_abono_factura='$id_registro', estado_abono_factura='UTILIZADO'
+                                                WHERE id_abono_factura='$id_abono';";
+                                        $conexon->consultaSimple($sql);
+                                        $sql = "INSERT INTO facturacion.abonos_factura(
+                                                 total_abono_factura,  fecha_creacion_abono_factura, 
+                                                 estado_abono_factura,
+                                                 tipo_abono, id_usuario_fk_abono_factura, id_abono_factura_fk_abono_factura)
+                                                VALUES ('$result', '$fecha_creacion', 'ACTIVO', 
+                                                'SOBRANTE', '$id_usuario', '$id_abono') returning id_abono_factura;";
+                                        $r3 = $conexon->consultaComplejaNorAso($sql);
+                                        $id_abono_factura = $r3['id_abono_factura'];
+                                        $fecha_codigo = date('y-m-d');
+                                        $arrayFecha = explode('-', $fecha_codigo);
+                                        $codigoAbono = 'A-' . $arrayFecha[0] . $arrayFecha[1] . $id_usuario . $id_abono_factura;
+                                        $sql = "update facturacion.abonos_factura set codigo_abono_factura = '$codigoAbono' WHERE 
+                                                id_abono_factura = '$id_abono_factura'";
+                                        $conexon->consultaSimple($sql);
+                                    } else {
+                                        $json_cargue_factura[$i]['detalle']['totalTarifa'] = $result;
+                                        $sql = "UPDATE facturacion.abonos_factura
+                                                SET  total_factura_abono_factura='$result', 
+                                                restante_abono_factura='0', fecha_creacion_abono_factura='$fecha_creacion', 
+                                                id_registro_factura_fk_abono_factura='$id_registro', estado_abono_factura='UTILIZADO'
+                                                WHERE id_abono_factura='$id_abono';";
+                                        $conexon->consultaSimple($sql);
+                                    }
+                                    $jt = json_encode($json_cargue_factura);
+                                    $sql = "UPDATE facturacion.registro_factura
+                                            SET  json_cargue_factura='$jt' WHERE id_registro_factura='$id_registro';";
+                                    $conexon->consultaSimple($sql);
+                                }
+                            }
+                            $data = [
+                                'code' => 'LTE-001'
+                            ];
+                        } else {
+                            $data = [
+                                'code' => 'LTE-000',
+                                'status' => 'error',
+                                'msg' => 'Lo sentimos, no se a generado factura'
+                            ];
+                        }
+                    } else {
+                        for ($i = 0; $i < count($r2); $i++) {
+    
+                        }
+                    }
+                } else {
+                    $data = [
+                        'code' => 'LTE-000',
+                        'status' => 'error',
+                        'msg' => 'Lo sentimos, No tiene facturas pendientes'
+                    ];
+                }
+            } else {
+                $code = [
+                    'code' => 'LTE-000',
+                    'status' => 'error',
+                    'msg' => 'Lo sentimos, no tienen facturas pendientes'
+                ];
+            }
         } else {
             $data = [
                 'code' => 'LTE-013'
