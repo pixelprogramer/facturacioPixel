@@ -6,5 +6,6 @@ export class Abonos_factura{
               public fecha_creacion_abono_factura : any,
               public id_registro_factura_fk_abono_factura : any,
               public estado_abono_factura:any,
-              public tipo_abono:any){}
+              public tipo_abono:any,
+              public codigo_abono_factura :any){}
 }

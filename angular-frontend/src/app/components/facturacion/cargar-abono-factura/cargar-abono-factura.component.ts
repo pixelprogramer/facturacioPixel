@@ -25,7 +25,8 @@ export class CargarAbonoFacturaComponent implements OnInit {
               private _UsuarioService: UsuarioService,
               private _FacturaService: FacturaService) {
     this.objAbonoFactura = new Abonos_factura('', '', '',
-      '', '', '', '', '000');
+      '', '',
+      '', '', '000','');
     this.userSelect = '';
     this.loader = 0;
     this.token = localStorage.getItem('token');
