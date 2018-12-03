@@ -96,4 +96,10 @@ export class FacturaService{
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this._http.post(this.url + 'administrador/abono/cargarAbono',parametros, {headers: headers});
   }
+  cargarValorTotal(token,id_user): Observable<any>{
+
+    let parametros = 'token='+token+'&id_user='+id_user;
+    let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+    return this._http.post(this.url + 'administrador/abono/cargarFacturaValor',parametros, {headers: headers});
+  }
 }

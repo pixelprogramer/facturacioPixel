@@ -20,17 +20,21 @@ export class CargarAbonoFacturaComponent implements OnInit {
   public filtro: any;
   public objUsuario: any;
   public userSelect: string;
+  public totalPagar: any;
+  public totalAbonoFormato: any;
 
   constructor(private _ElementService: ElementsService,
               private _UsuarioService: UsuarioService,
               private _FacturaService: FacturaService) {
     this.objAbonoFactura = new Abonos_factura('', '', '',
       '', '',
-      '', '', '000','');
+      '', '', '000', '');
     this.userSelect = '';
     this.loader = 0;
     this.token = localStorage.getItem('token');
     this.filtro = '';
+    this.totalPagar = '';
+    this.totalAbonoFormato = '';
   }
 
   ngOnInit() {
@@ -38,7 +42,7 @@ export class CargarAbonoFacturaComponent implements OnInit {
   }
 
   listarUsuarios() {
-    this.loader = 1
+    this.loader = 1;
     this._UsuarioService.listarUsuarioSeguridad(this.token).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
@@ -93,20 +97,46 @@ export class CargarAbonoFacturaComponent implements OnInit {
 
   selectUser(objUser) {
     this.objUsuario = objUser;
+    this.loader = 1;
+    this._FacturaService.cargarValorTotal(this.token, this.objUsuario.id_usuario).subscribe(
+      returned => {
+        this._ElementService.pi_poValidarCodigo(returned);
+        if (returned.status == 'success') {
+          this.totalPagar = returned.data.totalAbono;
+          this.totalAbonoFormato = returned.data.totalAbonoFormato;
+          this.loader = 0;
+        } else {
+          this.totalPagar = '';
+          this.totalAbonoFormato = '';
+          this._ElementService.pi_poVentanaAlertaWarning(returned.code, returned.msg);
+          this.objUsuario = null;
+          this.userSelect = '';
+          this.loader = 0;
+        }
+
+      }, error2 => {
+        this.loader = 0;
+      }
+    );
     this.userSelect = this.objUsuario.documento_usuario + '-' + this.objUsuario.nombre_usuario
   }
 
   validateData() {
+
     if (this.objUsuario != null) {
       if (this.objAbonoFactura.total_abono_factura != '') {
-        if (this.objAbonoFactura.total_abono_factura > 0) {
-          if (this.objAbonoFactura.tipo_abono != '000') {
-            return true;
+        if (parseInt(this.objAbonoFactura.total_abono_factura) <= parseInt(this.totalPagar)) {
+          if (this.objAbonoFactura.total_abono_factura > 0) {
+            if (this.objAbonoFactura.tipo_abono != '000') {
+              return true;
+            } else {
+              this._ElementService.pi_poVentanaAlertaWarning('PIXEL', 'El tipo de abono es requerido');
+            }
           } else {
-            this._ElementService.pi_poVentanaAlertaWarning('PIXEL', 'El tipo de abono es requerido');
+            this._ElementService.pi_poVentanaAlertaWarning('PIXEL', 'El total abono debe ser mayor a 0');
           }
         } else {
-          this._ElementService.pi_poVentanaAlertaWarning('PIXEL', 'El total abono debe ser mayor a 0');
+          this._ElementService.pi_poVentanaAlertaWarning('PIXEL', 'El abono no debe ser mayor al total a pagar');
         }
       } else {
         this._ElementService.pi_poVentanaAlertaWarning('PIXEL', 'El total abono es requerido');
@@ -120,16 +150,16 @@ export class CargarAbonoFacturaComponent implements OnInit {
   new() {
     if (this.validateData()) {
       this.loader = 1;
-      this._FacturaService.cargarAbono(this.token,this.objAbonoFactura,this.objUsuario.id_usuario).subscribe(
-        returned=>{
+      this._FacturaService.cargarAbono(this.token, this.objAbonoFactura, this.objUsuario.id_usuario).subscribe(
+        returned => {
           this._ElementService.pi_poValidarCodigo(returned);
-          if (returned.status == 'success'){
+          if (returned.status == 'success') {
             this.loader = 0;
-          }else{
-            this._ElementService.pi_poVentanaAlertaWarning(returned.code,returned.msg);
+          } else {
+            this._ElementService.pi_poVentanaAlertaWarning(returned.code, returned.msg);
             this.loader = 0;
           }
-        },error2 => {
+        }, error2 => {
 
         }
       )

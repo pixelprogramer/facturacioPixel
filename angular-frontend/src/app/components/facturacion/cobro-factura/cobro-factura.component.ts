@@ -15,6 +15,8 @@ export class CobroFacturaComponent implements OnInit {
   token: any;
   public objRespuesta: any;
   position = "top-right";
+  public loader: any;
+
   constructor(private _ElementService: ElementsService,
               private _FacturaService: FacturaService) {
     this.objregistro_factura = new Registro_factura('', '',
@@ -23,61 +25,75 @@ export class CobroFacturaComponent implements OnInit {
       '', '');
     this.token = localStorage.getItem('token');
     this.objRespuesta = null;
-    $("#loaderGenerarReporte").hide();
+    this.loader = 0;
+
   }
 
   ngOnInit() {
     this._ElementService.pi_poValidarUsuario('CobroFacturaComponent');
-    $("#loaderGenerarReporte").hide();
+    this.loader = 0;
   }
 
   tecla(event) {
     if (event.key === "Enter" || event.key == "Tab") {
-      $("#loaderGenerarReporte").show();
-      this._FacturaService.cargarFacturaPagar(this.token,this.objregistro_factura).subscribe(
-        respuesta => {
-          this._ElementService.pi_poValidarCodigo(respuesta);
-          if (respuesta.status == 'success') {
-            this.objRespuesta = respuesta.data;
-            this._ElementService.pi_poBontonDesabilitar('#codigoFactura');
-            this._ElementService.pi_poAlertaSuccess(respuesta.msg, 'PIXEL');
-            $("#loaderGenerarReporte").hide();
-          } else {
-            this.objRespuesta = respuesta.data;
-            this._ElementService.pi_poVentanaAlertaWarning('PIXEL', respuesta.msg);
-            $("#loaderGenerarReporte").hide();
-          }
-        }, error2 => {
+      this.loader = 1;
+      var arregloCode = this.objregistro_factura.codigo_registro_factura.split('-');
+      if (arregloCode.length > 1) {
+        if (arregloCode[0] == 'F') {
+          this._FacturaService.cargarFacturaPagar(this.token, this.objregistro_factura).subscribe(
+            respuesta => {
+              this._ElementService.pi_poValidarCodigo(respuesta);
+              if (respuesta.status == 'success') {
+                this.objRespuesta = respuesta.data;
+                this._ElementService.pi_poBontonDesabilitar('#codigoFactura');
+                this._ElementService.pi_poAlertaSuccess(respuesta.msg, 'PIXEL');
+                this.loader = 0;
+              } else {
+                this.objRespuesta = respuesta.data;
+                this._ElementService.pi_poVentanaAlertaWarning('PIXEL', respuesta.msg);
+                this.loader = 0;
+              }
+            }, error2 => {
 
+            }
+          )
+        } else if (arregloCode[0] == 'A') {//Logica abono
+          console.log('pagar abono');
+        } else {
+          this._ElementService.pi_poVentanaAlertaWarning('1000', 'Lo sentimos, no reconocemos este codigo');
         }
-      )
+      } else {
+        this._ElementService.pi_poVentanaAlertaWarning('1000', 'Lo sentimos, el codigo es requerido');
+      }
+
     }
   }
 
   pagarFactura() {
-    $("#loaderGenerarReporte").show();
+    this.loader = 1;
     this._FacturaService.pagarFactura(this.token, this.objregistro_factura).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           this.objRespuesta = respuesta.data;
           this.objregistro_factura.codigo_registro_factura = '';
-          this.objRespuesta=null;
+          this.objRespuesta = null;
           this._ElementService.pi_poBotonHabilitar('#codigoFactura');
           this._ElementService.pi_poAlertaSuccess(respuesta.msg, 'PIXEL');
-          $("#loaderGenerarReporte").hide();
+          this.loader = 0;
           $("#codigoFactura").focus();
         } else {
           this.objRespuesta = respuesta.data;
           this._ElementService.pi_poVentanaAlertaWarning('PIXEL', respuesta.msg);
-          $("#loaderGenerarReporte").hide();
+          this.loader = 0;
         }
       }, error2 => {
 
       }
     )
   }
-  cancelarFactura(){
+
+  cancelarFactura() {
     swal({
       title: '¿Esta seguro de cancelar la factura?',
       text: 'Si su respuesat es SI, esta factura se recargara en la proxima factura generada',
@@ -88,10 +104,10 @@ export class CobroFacturaComponent implements OnInit {
       confirmButtonText: 'Si, lo estoy'
     }).then((result) => {
       if (result.value) {
-        this.objregistro_factura.codigo_registro_factura='';
-        this.objRespuesta=null;
+        this.objregistro_factura.codigo_registro_factura = '';
+        this.objRespuesta = null;
         this._ElementService.pi_poBotonHabilitar('#codigoFactura');
-        this._ElementService.pi_poAlertaError('Se cancelo el pago de la factura','PIXEL');
+        this._ElementService.pi_poAlertaError('Se cancelo el pago de la factura', 'PIXEL');
         $("#codigoFactura").focus();
       }
     });

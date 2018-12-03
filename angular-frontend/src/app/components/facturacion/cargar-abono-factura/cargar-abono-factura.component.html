@@ -15,6 +15,11 @@
 <ng2-toasty [position]="position"></ng2-toasty>
 <app-card title="Cargar abono">
   <div class="row">
+    <div class="col-md-12" style="text-align: center">
+      <h3 *ngIf="totalAbonoFormato !=''">Total a pagar pendiente: <strong style="color: green">{{totalAbonoFormato}}</strong></h3>
+    </div>
+  </div>
+  <div class="row" style="margin-top: 15px">
     <div class="col-md-3">
       <h4 class="sub-title">Usuario</h4>
       <div class="input-group">
@@ -39,8 +44,8 @@
               [ngStyle]="{'border': objAbonoFactura.tipo_abono == '000' ? 'red solid 1px' : '#577928 solid 1px'}"
               [(ngModel)]="objAbonoFactura.tipo_abono">
         <option value="000">Seleccione</option>
-        <option value="efectivo">Efectivo</option>
-        <option value="abono">Abono</option>
+        <option value="EFECTIVO">Efectivo</option>
+        <option value="CONSIGNACION">Consignacion</option>
       </select>
     </div>
   </div>
