@@ -5,6 +5,7 @@ import {UsuarioService} from "../../../services/usuario.service";
 import {Usuario} from "../../../models/seguridad/usuario";
 import {FacturaService} from "../../../services/factura/factura.service";
 import {GLOBAL} from "../../../services/global";
+import swal from "sweetalert2";
 
 @Component({
   selector: 'app-cargar-abono-factura',
@@ -151,25 +152,41 @@ export class CargarAbonoFacturaComponent implements OnInit {
   }
 
   new() {
-    if (this.validateData()) {
-      this.urlFile=GLOBAL.urlFiles;
-      this.loader = 1;
-      this._FacturaService.cargarAbono(this.token, this.objAbonoFactura, this.objUsuario,this.totalPagar).subscribe(
-        returned => {
-          this._ElementService.pi_poValidarCodigo(returned);
-          if (returned.status == 'success') {
-            this.urlFile += returned.data;
-            let frame = '<iframe src="'+this.urlFile+'"style="width:100%; height:1200px;" frameborder="0"></iframe>';
-            $("#seccioPdf").html(frame);
-            this.loader = 0;
-          } else {
-            this._ElementService.pi_poVentanaAlertaWarning(returned.code, returned.msg);
-            this.loader = 0;
-          }
-        }, error2 => {
 
+    if (this.validateData()) {
+
+      swal({
+        title: '¿Nuevo abono?',
+        text: 'Esta seguro de crear este abono',
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Si, lo estoy'
+      }).then((result) => {
+        if (result.value) {
+          this.urlFile=GLOBAL.urlFiles;
+          this.loader = 1;
+          this._FacturaService.cargarAbono(this.token, this.objAbonoFactura, this.objUsuario,this.totalPagar).subscribe(
+            returned => {
+              this._ElementService.pi_poValidarCodigo(returned);
+              if (returned.status == 'success') {
+                this.urlFile += returned.data;
+                let frame = '<iframe src="'+this.urlFile+'"style="width:100%; height:1200px;" frameborder="0"></iframe>';
+                $("#seccioPdf").html(frame);
+                this.loader = 0;
+              } else {
+                this._ElementService.pi_poVentanaAlertaWarning(returned.code, returned.msg);
+                this.loader = 0;
+              }
+            }, error2 => {
+
+            }
+          )
         }
-      )
+      });
+
+
     }
   }
 }
