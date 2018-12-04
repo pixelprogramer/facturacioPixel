@@ -90,9 +90,10 @@ export class FacturaService{
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this._http.post(this.url + 'administrador/factura/cobrarFactura',parametros, {headers: headers});
   }
-  cargarAbono(token,objAbono,id_user): Observable<any>{
+  cargarAbono(token,objAbono,usuario,total): Observable<any>{
     let json = JSON.stringify(objAbono);
-    let parametros = 'token='+token+'&json='+json+'&id_user='+id_user;
+    let jsonUsuario= JSON.stringify(usuario)
+    let parametros = 'token='+token+'&json='+json+'&usuario='+jsonUsuario+'&total='+total;
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this._http.post(this.url + 'administrador/abono/cargarAbono',parametros, {headers: headers});
   }
@@ -101,5 +102,11 @@ export class FacturaService{
     let parametros = 'token='+token+'&id_user='+id_user;
     let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
     return this._http.post(this.url + 'administrador/abono/cargarFacturaValor',parametros, {headers: headers});
+  }
+  efectuarAbono(token,objAbono): Observable<any>{
+    let json = JSON.stringify(objAbono);
+    let parametros = 'token='+token+'&json='+json;
+    let headers = new HttpHeaders().set('Content-Type', 'application/x-www-form-urlencoded');
+    return this._http.post(this.url + 'administrador/abono/efectuarAbono',parametros, {headers: headers});
   }
 }

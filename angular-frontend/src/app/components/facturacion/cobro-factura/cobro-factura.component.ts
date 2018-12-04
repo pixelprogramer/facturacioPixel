@@ -3,6 +3,7 @@ import {ElementsService} from "../../../services/elements.service";
 import {Registro_factura} from "../../../models/factura/registro_factura";
 import {FacturaService} from "../../../services/factura/factura.service";
 import swal from "sweetalert2";
+import {Abonos_factura} from "../../../models/factura/abonos_factura";
 
 @Component({
   selector: 'app-cobro-factura',
@@ -12,6 +13,8 @@ import swal from "sweetalert2";
 })
 export class CobroFacturaComponent implements OnInit {
   public objregistro_factura: Registro_factura;
+  public objAbono: Abonos_factura;
+  public abono: any;
   token: any;
   public objRespuesta: any;
   position = "top-right";
@@ -23,9 +26,13 @@ export class CobroFacturaComponent implements OnInit {
       '', '', '', '',
       '', '', '', '',
       '', '');
+    this.objAbono = new Abonos_factura('', '',
+      '', '', '',
+      '', '', '', '');
     this.token = localStorage.getItem('token');
     this.objRespuesta = null;
     this.loader = 0;
+    this.abono = '';
 
   }
 
@@ -58,14 +65,29 @@ export class CobroFacturaComponent implements OnInit {
             }
           )
         } else if (arregloCode[0] == 'A') {//Logica abono
-          console.log('pagar abono');
+          this.objAbono.codigo_abono_factura = this.objregistro_factura.codigo_registro_factura;
+          this._FacturaService.efectuarAbono(this.token, this.objAbono).subscribe(
+            returned => {
+              if (returned.status == 'success') {
+                this.abono = '1';
+                this.loader = 0;
+              } else {
+                this.abono = '';
+                this._ElementService.pi_poVentanaAlertaWarning(returned.code, returned.msg);
+                this.loader = 0;
+              }
+            }, error2 => {
+              this.loader = 0;
+            }
+          )
         } else {
           this._ElementService.pi_poVentanaAlertaWarning('1000', 'Lo sentimos, no reconocemos este codigo');
+          this.loader = 0;
         }
       } else {
         this._ElementService.pi_poVentanaAlertaWarning('1000', 'Lo sentimos, el codigo es requerido');
+        this.loader = 0;
       }
-
     }
   }
 

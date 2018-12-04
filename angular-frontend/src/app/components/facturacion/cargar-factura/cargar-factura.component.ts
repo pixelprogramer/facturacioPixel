@@ -13,9 +13,8 @@ import {FacturaService} from "../../../services/factura/factura.service";
 export class CargarFacturaComponent implements OnInit {
   navigation = 'select';
   model:any;
-
+  public loader: any;
   disabled = true;
-
   toggle = false;
   token: any;
   position = "top-right";
@@ -24,6 +23,7 @@ export class CargarFacturaComponent implements OnInit {
               private _FacturaService:FacturaService) {
     this.model = '';
     this.token= localStorage.getItem('token');
+    this.loader=0;
   }
 
   ngOnInit() {
@@ -40,7 +40,7 @@ export class CargarFacturaComponent implements OnInit {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Si, lo estoy'
       }).then((result) => {
-        $("#loaderUsuario").show();
+        this.loader=1;
         if (result.value) {
           this._FacturaService.cargarFacturas(this.token,this.parserFormatter.format(this.model)).subscribe(
             respuesta=>{
@@ -48,12 +48,14 @@ export class CargarFacturaComponent implements OnInit {
               if (respuesta.status == 'success'){
                 this.model = '';
                 this._ElementService.pi_poAlertaSuccess(respuesta.msg,'PIXEL');
+                this.loader=0;
               }else
               {
                 this._ElementService.pi_poVentanaAlertaWarning('PIXEL',respuesta.msg);
+                this.loader=0;
               }
             },error2 => {
-
+              this.loader=0;
             }
           )
         }

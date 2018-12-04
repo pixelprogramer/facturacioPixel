@@ -1,3 +1,16 @@
+<div style="position: absolute;
+    z-index: 1000000000;
+    width: 100%;
+    height: 100%;
+    background: #f3f3f382;
+    text-align: center;" id="loader" *ngIf="loader!=0">
+  <div>
+    <img style="
+    width: 18%;
+    height: 50%;
+    margin-top: 13%;" src="./assets/images/logo_loader.gif"/>
+  </div>
+</div>
 <ng2-toasty [position]="position"></ng2-toasty>
 <app-card title="Nuevos Ramales">
   <div class="row">
@@ -13,43 +26,33 @@
   </div>
   <div class="row">
     <div class="col-md-12">
-      <button class="btn btnPropio" style="width: 100%; margin-top: 10px" (click)="actualizarRamales()">Actualizar</button>
+      <button class="btn btnPropio" style="width: 100%; margin-top: 10px" (click)="actualizarRamales()">Actualizar
+      </button>
     </div>
   </div>
 
   <div class="row">
     <div class="col-sm-12">
-      <app-card [title]="'Tabla de usuarios'">
-        <div class="col-md-12" style="margin-top: 10px" id="loaderTablaMenu">
-          <div class="align-content-center">
-            <div class="preloader3" style="height: 0px; padding-top: 20px">
-              <div class="circ1 loader-warning"></div>
-              <div class="circ2 loader-warning"></div>
-              <div class="circ3 loader-warning"></div>
-              <div class="circ4 loader-warning"></div>
-            </div>
-          </div>
-        </div>
-        <div class="dataTables_scrollBody"
-             style="position: relative; overflow: auto; max-height: 400px; width: 100%; margin-top: 10px">
-          <table class="table table-striped table-bordered nowrap dataTable" role="grid"
-                 aria-describedby="scr-vrt-dt_info" style="width: 100%;">
-            <thead>
-            <tr role="row" style="height: 0px;">
-              <th style="width: 144.45px;">
-                Ramal
-              </th>
-            </tr>
-            </thead>
+      <div class="dataTables_scrollBody"
+           style="position: relative; overflow: auto; max-height: 400px; width: 100%; margin-top: 10px">
+        <table class="table table-striped table-bordered nowrap dataTable" role="grid"
+               aria-describedby="scr-vrt-dt_info" style="width: 100%;">
+          <thead>
+          <tr role="row" style="height: 0px;">
+            <th style="width: 144.45px;">
+              Ramal
+            </th>
+          </tr>
+          </thead>
 
-            <tbody>
-            <tr *ngFor="let ramal of listRamales" role="row" class="odd Tablas filaTabla" (click)="seleccionarRamal(ramal)">
-              <td>{{ramal.descripcion_ramal_factura}}</td>
-            </tr>
-            </tbody>
-          </table>
-        </div>
-      </app-card>
+          <tbody>
+          <tr *ngFor="let ramal of listRamales" role="row" class="odd Tablas filaTabla"
+              (click)="seleccionarRamal(ramal)">
+            <td>{{ramal.descripcion_ramal_factura}}</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </app-card>

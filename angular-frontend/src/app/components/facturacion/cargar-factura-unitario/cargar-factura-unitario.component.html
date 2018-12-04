@@ -1,3 +1,16 @@
+<div style="position: absolute;
+    z-index: 1000000000;
+    width: 100%;
+    height: 100%;
+    background: #f3f3f382;
+    text-align: center;" id="loader" *ngIf="loader!=0">
+  <div>
+    <img style="
+    width: 18%;
+    height: 50%;
+    margin-top: 13%;" src="./assets/images/logo_loader.gif"/>
+  </div>
+</div>
 <ng2-toasty [position]="position"></ng2-toasty>
 <app-card title="Cargar factura de cobro de mes">
   <div class="row">
@@ -14,9 +27,12 @@
   </div>
 </app-card>
 
-<app-modal-basic #modalSeleccionarUsuario>
+<app-modal-basic #modalSeleccionarUsuario [dialogClass]="'modal-lg'">
   <div class="app-modal-header">
     <h4 class="modal-title">¿Seleccionar usuario?</h4>
+    <button type="button" class="close basic-close" (click)="modalSeleccionarUsuario.hide()">
+      <span aria-hidden="true">&times;</span>
+    </button>
   </div>
   <div class="app-modal-body">
     <div class="col-sm-12" style="margin-top: 10px">
@@ -27,16 +43,6 @@
           <button class="btn btn-primary input-group-text" type="button"
                   (click)="filtrarUsuario()"><a style="font-size: 5px">🔎</a>
           </button>
-        </div>
-      </div>
-      <div class="col-md-12" style="margin-top: 10px" id="loaderTablaMenu">
-        <div class="align-content-center">
-          <div class="preloader3" style="height: 0px; padding-top: 20px">
-            <div class="circ1 loader-warning"></div>
-            <div class="circ2 loader-warning"></div>
-            <div class="circ3 loader-warning"></div>
-            <div class="circ4 loader-warning"></div>
-          </div>
         </div>
       </div>
       <div class="dataTables_scrollBody"

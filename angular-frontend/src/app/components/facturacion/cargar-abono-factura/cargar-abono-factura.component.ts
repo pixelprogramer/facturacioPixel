@@ -4,6 +4,7 @@ import {Abonos_factura} from "../../../models/factura/abonos_factura";
 import {UsuarioService} from "../../../services/usuario.service";
 import {Usuario} from "../../../models/seguridad/usuario";
 import {FacturaService} from "../../../services/factura/factura.service";
+import {GLOBAL} from "../../../services/global";
 
 @Component({
   selector: 'app-cargar-abono-factura',
@@ -22,7 +23,8 @@ export class CargarAbonoFacturaComponent implements OnInit {
   public userSelect: string;
   public totalPagar: any;
   public totalAbonoFormato: any;
-
+  position = "top-right";
+  public urlFile:any;
   constructor(private _ElementService: ElementsService,
               private _UsuarioService: UsuarioService,
               private _FacturaService: FacturaService) {
@@ -35,6 +37,7 @@ export class CargarAbonoFacturaComponent implements OnInit {
     this.filtro = '';
     this.totalPagar = '';
     this.totalAbonoFormato = '';
+
   }
 
   ngOnInit() {
@@ -149,11 +152,15 @@ export class CargarAbonoFacturaComponent implements OnInit {
 
   new() {
     if (this.validateData()) {
+      this.urlFile=GLOBAL.urlFiles;
       this.loader = 1;
-      this._FacturaService.cargarAbono(this.token, this.objAbonoFactura, this.objUsuario.id_usuario).subscribe(
+      this._FacturaService.cargarAbono(this.token, this.objAbonoFactura, this.objUsuario,this.totalPagar).subscribe(
         returned => {
           this._ElementService.pi_poValidarCodigo(returned);
           if (returned.status == 'success') {
+            this.urlFile += returned.data;
+            let frame = '<iframe src="'+this.urlFile+'"style="width:100%; height:1200px;" frameborder="0"></iframe>';
+            $("#seccioPdf").html(frame);
             this.loader = 0;
           } else {
             this._ElementService.pi_poVentanaAlertaWarning(returned.code, returned.msg);

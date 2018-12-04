@@ -20,6 +20,7 @@ export class CrearFacturaComponent implements OnInit {
   public seleccionUsuario: Usuario;
   public objFactura: Factura;
   public listFactura = [];
+  public loader: any;
   public objTarifaFactura: Tarifas;
   public listTarifasFactura: Array<Tarifas>;
   position = "top-right";
@@ -50,20 +51,21 @@ export class CrearFacturaComponent implements OnInit {
   }
 
   listarUsuarios() {
-    $("#loaderTablaMenu").show();
+    this.loader=1;
     this._UsuarioService.listarUsuarioSeguridad(this.token).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           if (respuesta.data != 0) {
             this.listUsuario = respuesta.data;
-            $("#loaderTablaMenu").hide();
+            this.loader=0;
           } else {
             this.listUsuario = [];
-            $("#loaderTablaMenu").hide();
+            this.loader=0;
           }
         } else {
           this._ElementService.pi_poVentanaAlertaWarning(respuesta.code, respuesta.msg);
+          this.loader=0;
         }
       }, error2 => {
 
@@ -86,18 +88,22 @@ export class CrearFacturaComponent implements OnInit {
 
 //####################################Seccion factura
   listarFactura() {
+    this.loader=1;
     this._FacturaService.listarFacturasUsuario(this.token, this.seleccionUsuario.id_usuario).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           if (respuesta.data != 0) {
             this.listFactura = respuesta.data;
+            this.loader=0;
           } else {
             this.listFactura = [];
             this._ElementService.pi_poVentanaAlertaWarning('PIXEL-000', 'No se encontraron facturas');
+            this.loader=0;
           }
         } else {
           this._ElementService.pi_poVentanaAlertaWarning('PIXEL-000', respuesta.msg);
+          this.loader=0;
         }
       }, error2 => {
 
@@ -128,7 +134,6 @@ export class CrearFacturaComponent implements OnInit {
                   cancelButtonColor: '#d33',
                   confirmButtonText: 'Si, lo estoy'
                 }).then((result) => {
-                  $("#loaderUsuario").show();
                   if (result.value) {
                     this.metodoCrearFactura();
                   } else {
@@ -177,7 +182,7 @@ export class CrearFacturaComponent implements OnInit {
                   cancelButtonColor: '#d33',
                   confirmButtonText: 'Si, lo estoy'
                 }).then((result) => {
-                  $("#loaderUsuario").show();
+                  this.loader=1;
                   if (result.value) {
                     this.metodoActualizarFactura();
                     this._ElementService.pi_poBotonHabilitar('#btnActualizarFactura');
@@ -212,17 +217,19 @@ export class CrearFacturaComponent implements OnInit {
   }
 
   metodoActualizarFactura() {
+    this.loader=1;
     this._FacturaService.actualizarFactura(this.token, this.objFactura).subscribe(
       respuesta => {
-        console.log(respuesta);
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           this._ElementService.pi_poAlertaSuccess(respuesta.msg, 'PIXEL');
           this.listarFactura();
           this.limpiarCampos();
           this._ElementService.pi_poBotonHabilitar('#btnCrearFactura');
+          this.loader=0;
         } else {
           this._ElementService.pi_poVentanaAlertaWarning('PIXEL', respuesta.msg);
+          this.loader=0;
         }
       }, error => {
 
@@ -231,20 +238,22 @@ export class CrearFacturaComponent implements OnInit {
   }
 
   metodoCrearFactura() {
+    this.loader=1;
     this._FacturaService.crearFactura(this.token, this.objFactura).subscribe(
       respuesta => {
-        console.log(respuesta);
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           this._ElementService.pi_poAlertaSuccess(respuesta.msg, 'PIXEL');
           this.listarFactura();
           this.limpiarCampos();
           this._ElementService.pi_poBotonHabilitar('#btnCrearFactura');
+          this.loader=0;
         } else {
           this._ElementService.pi_poVentanaAlertaWarning('PIXEL', respuesta.msg);
+          this.loader=0;
         }
       }, error => {
-
+        this.loader=0;
       }
     )
   }
@@ -262,21 +271,25 @@ export class CrearFacturaComponent implements OnInit {
 
   //####################################Seccion tarifa
   listarTarifasFactura() {
+    this.loader=1;
     this._FacturaService.listarTarifasFactura(this.token, this.objFactura.id_factura).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           if (respuesta.data != 0) {
             this.listTarifasFactura = respuesta.data;
+            this.loader=0;
           } else {
             this.listTarifasFactura = [];
+            this.loader=0;
           }
 
         } else {
           this.listTarifasFactura = [];
+          this.loader=0;
         }
       }, error2 => {
-
+        this.loader=0;
       }
     )
   }
@@ -286,6 +299,7 @@ export class CrearFacturaComponent implements OnInit {
     if (this.objTarifaFactura.descripcion_tarifa != '') {
       if (this.objTarifaFactura.total_tarifa != '') {
         if (this.objTarifaFactura.estado_tarifa != '000') {
+          this.loader=1;
           this._FacturaService.crearTarifa(this.token, this.objTarifaFactura).subscribe(
             respuesta => {
               this._ElementService.pi_poValidarCodigo(respuesta);
@@ -294,12 +308,14 @@ export class CrearFacturaComponent implements OnInit {
                 this.listarTarifasFactura();
                 this._ElementService.pi_poBotonHabilitar('#btnCrearTarifa');
                 this.limpiarCamposTarifa();
+                this.loader=0;
               } else {
                 this._ElementService.pi_poVentanaAlertaWarning('PIXEL', respuesta.msg);
                 this._ElementService.pi_poBotonHabilitar('#btnCrearTarifa');
+                this.loader=0;
               }
             }, error2 => {
-
+              this.loader=0;
             }
           )
         } else {
@@ -322,6 +338,7 @@ export class CrearFacturaComponent implements OnInit {
       if (this.objTarifaFactura.descripcion_tarifa != '') {
         if (this.objTarifaFactura.total_tarifa != '') {
           if (this.objTarifaFactura.estado_tarifa != '000') {
+            this.loader=1;
             this._FacturaService.actualizarTarifa(this.token, this.objTarifaFactura).subscribe(
               respuesta => {
                 this._ElementService.pi_poValidarCodigo(respuesta);
@@ -330,12 +347,14 @@ export class CrearFacturaComponent implements OnInit {
                   this.listarTarifasFactura();
                   this._ElementService.pi_poBotonHabilitar('#btnActualizarTarifa');
                   this.limpiarCamposTarifa()
+                  this.loader=0;
                 } else {
                   this._ElementService.pi_poVentanaAlertaWarning('PIXEL', respuesta.msg);
                   this._ElementService.pi_poBotonHabilitar('#btnActualizarTarifa');
+                  this.loader=0;
                 }
               }, error2 => {
-
+                this.loader=0;
               }
             )
           } else {
@@ -386,6 +405,7 @@ export class CrearFacturaComponent implements OnInit {
 
   filtrarUsuario() {
     if (this.filtro.trim() != '') {
+      this.loader=1;
       this._UsuarioService.filtroUsuario(this.token, this.filtro).subscribe(
         respuesta => {
           this._ElementService.pi_poValidarCodigo(respuesta);
@@ -393,15 +413,19 @@ export class CrearFacturaComponent implements OnInit {
             if (respuesta.data != 0) {
               this.listUsuario = respuesta.data;
               this.filtro = '';
+              this.loader=0;
             } else {
               this._ElementService.pi_poAlertaError('No se encontraron resultados', 'PIXEL');
               this.listarUsuarios();
+              this.loader=0;
             }
           } else {
             this._ElementService.pi_poVentanaAlertaWarning('PIXEL', respuesta.msg);
+            this.loader=0;
           }
 
         }, error2 => {
+          this.loader=0;
 
         }
       )
@@ -413,19 +437,19 @@ export class CrearFacturaComponent implements OnInit {
   }
 
   listarRamales() {
-    $("#loaderTablaMenu").show();
+    this.loader=1;
     this._FacturaService.listarRamales(this.token).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           this.listRamales = respuesta.data;
           this._ElementService.pi_poAlertaSuccess(respuesta.msg, respuesta.code);
-          $("#loaderTablaMenu").hide();
+          this.loader=0;
         } else {
-          $("#loaderTablaMenu").hide();
+          this.loader=0;
         }
       }, error2 => {
-
+        this.loader=0;
       }
     )
   }

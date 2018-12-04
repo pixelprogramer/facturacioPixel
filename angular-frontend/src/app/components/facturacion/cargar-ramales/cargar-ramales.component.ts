@@ -12,6 +12,7 @@ import {Ramal_factura} from "../../../models/factura/ramal_factura";
 export class CargarRamalesComponent implements OnInit {
   public objRamalFactura: Ramal_factura
   public token: any;
+  public loader: any;
   public listRamales: Array<Ramal_factura>;
   position = "top-right";
 
@@ -23,7 +24,7 @@ export class CargarRamalesComponent implements OnInit {
 
   ngOnInit() {
     this._ElementService.pi_poValidarUsuario('CargarRamalesComponent');
-    $("#loaderTablaMenu").hide();
+    this.loader=0;
     this.listarRamales();
   }
   limpiarCampos(){
@@ -31,15 +32,17 @@ export class CargarRamalesComponent implements OnInit {
   }
   cargarRamales() {
     if (this.objRamalFactura.descripcion_ramal_factura.trim() != '') {
+      this.loader=1;
       this._FacturaService.cargarRamales(this.token, this.objRamalFactura).subscribe(
         respuesta => {
           this._ElementService.pi_poValidarCodigo(respuesta);
           if (respuesta.status == 'success') {
             this.listarRamales();
             this.limpiarCampos();
+            this.loader=0;
             this._ElementService.pi_poAlertaSuccess(respuesta.msg, respuesta.code);
           } else {
-
+            this.loader=0;
           }
         }, error2 => {
 
@@ -58,18 +61,20 @@ export class CargarRamalesComponent implements OnInit {
   actualizarRamales() {
     if (this.objRamalFactura.descripcion_ramal_factura.trim() != '') {
       if (this.objRamalFactura.id_ramal_factura != '' || this.objRamalFactura.id_ramal_factura != null) {
+        this.loader=1;
         this._FacturaService.actualizarRamales(this.token, this.objRamalFactura).subscribe(
           respuesta => {
             this._ElementService.pi_poValidarCodigo(respuesta);
             if (respuesta.status == 'success') {
               this.listarRamales();
               this.limpiarCampos();
+              this.loader=0;
               this._ElementService.pi_poAlertaSuccess(respuesta.msg, respuesta.code);
             } else {
-
+              this.loader=0;
             }
           }, error2 => {
-
+            this.loader=0;
           }
         )
       } else {
@@ -81,19 +86,19 @@ export class CargarRamalesComponent implements OnInit {
   }
 
   listarRamales() {
-    $("#loaderTablaMenu").show();
+    this.loader=1;
     this._FacturaService.listarRamales(this.token).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           this.listRamales = respuesta.data;
           this._ElementService.pi_poAlertaSuccess(respuesta.msg, respuesta.code);
-          $("#loaderTablaMenu").hide();
+          this.loader=0;
         } else {
-          $("#loaderTablaMenu").hide();
+          this.loader=0;
         }
       }, error2 => {
-
+        this.loader=0;
       }
     )
   }

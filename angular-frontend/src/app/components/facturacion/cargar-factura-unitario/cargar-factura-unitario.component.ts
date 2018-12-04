@@ -15,12 +15,11 @@ import {Usuario} from "../../../models/seguridad/usuario";
 export class CargarFacturaUnitarioComponent implements OnInit {
   navigation = 'select';
   model:any;
-
   disabled = true;
-
   toggle = false;
   token: any;
   position = "top-right";
+  public loader: any;
   public listUsuario: Array<any>;
   public seleccionUsuario: Usuario;
   public filtro:any;
@@ -35,6 +34,7 @@ export class CargarFacturaUnitarioComponent implements OnInit {
       '', '', '', '', '', '','');
 
     this.filtro = '';
+    this.loader=0;
   }
 
   ngOnInit() {
@@ -54,7 +54,7 @@ export class CargarFacturaUnitarioComponent implements OnInit {
           cancelButtonColor: '#d33',
           confirmButtonText: 'Si, lo estoy'
         }).then((result) => {
-          $("#loaderUsuario").show();
+          this.loader=1;
           if (result.value) {
             this._FacturaService.cargarFacturasUsuarioUnitario(this.token,
               this.parserFormatter.format(this.model),this.seleccionUsuario.id_usuario).subscribe(
@@ -63,9 +63,11 @@ export class CargarFacturaUnitarioComponent implements OnInit {
                 if (respuesta.status == 'success'){
                   this.model = '';
                   this._ElementService.pi_poAlertaSuccess(respuesta.msg,'PIXEL');
+                  this.loader=0;
                 }else
                 {
                   this._ElementService.pi_poVentanaAlertaWarning('PIXEL',respuesta.msg);
+                  this.loader=0;
                 }
               },error2 => {
 
@@ -76,16 +78,19 @@ export class CargarFacturaUnitarioComponent implements OnInit {
       }else
       {
         this._ElementService.pi_poVentanaAlertaWarning('PIXEL','Lo sentimos, sebes seleccionar una fecha');
+        this.loader=0;
       }
     }else
     {
       this._ElementService.pi_poAlertaError('Lo sentimos, no se selecciono el usuario','PIXEL');
+      this.loader=0;
     }
 
 
   }
   filtrarUsuario(){
     if (this.filtro.trim() != ''){
+      this.loader=1;
       this._UsuarioService.filtroUsuario(this.token,this.filtro).subscribe(
         respuesta=>{
           this._ElementService.pi_poValidarCodigo(respuesta);
@@ -93,18 +98,21 @@ export class CargarFacturaUnitarioComponent implements OnInit {
             if (respuesta.data != 0){
               this.listUsuario = respuesta.data;
               this.filtro='';
+              this.loader=0;
             }else
             {
               this._ElementService.pi_poAlertaError('No se encontraron resultados','PIXEL');
               this.listarUsuarios();
+              this.loader=0;
             }
           }else
           {
             this._ElementService.pi_poVentanaAlertaWarning('PIXEL',respuesta.msg);
+            this.loader=0;
           }
 
         },error2 => {
-
+          this.loader=0;
         }
       )
     }else
@@ -115,23 +123,24 @@ export class CargarFacturaUnitarioComponent implements OnInit {
 
   }
   listarUsuarios() {
-    $("#loaderTablaMenu").show();
+    this.loader=1;
     this._UsuarioService.listarUsuarioSeguridad(this.token).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           if (respuesta.data != 0) {
             this.listUsuario = respuesta.data;
-            $("#loaderTablaMenu").hide();
+            this.loader=0;
           } else {
             this.listUsuario = [];
-            $("#loaderTablaMenu").hide();
+            this.loader=0;
           }
         } else {
           this._ElementService.pi_poVentanaAlertaWarning(respuesta.code, respuesta.msg);
+          this.loader=0;
         }
       }, error2 => {
-
+        this.loader=0;
       }
     );
 

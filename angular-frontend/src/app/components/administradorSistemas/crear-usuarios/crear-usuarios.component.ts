@@ -20,6 +20,7 @@ export class CrearUsuariosComponent implements OnInit {
   public listRol: Array<Rol>;
   public token: any;
   public listRamales: Array<Ramal_factura>;
+  public loader: any;
   constructor(private _ElementService: ElementsService,
               private _RolService: RolService,
               private _UsuarioService: UsuarioService,
@@ -35,51 +36,56 @@ export class CrearUsuariosComponent implements OnInit {
     this.listarRoles();
     this.listarUsuarios();
     this.listarRamales();
-    $("#loaderTablaMenu").hide();
+    this.loader= 0;
   }
 
   listarRoles() {
+    this.loader= 1;
     this._RolService.listarRol(this.token).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           if (respuesta.data != 0) {
             this.listRol = respuesta.data;
+            this.loader= 0;
           } else {
             this.listRol = [];
+            this.loader= 0;
           }
         } else {
-
+          this.loader= 0;
         }
       }, error2 => {
-
+        this.loader= 0;
       }
     )
   }
 
   listarUsuarios() {
-    $("#loaderTablaMenu").show();
+    this.loader= 1;
     this._UsuarioService.listarUsuarioSeguridad(this.token).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           if (respuesta.data != 0) {
             this.listUsuario = respuesta.data;
-            $("#loaderTablaMenu").hide();
+            this.loader= 0;
           } else {
             this.listUsuario = [];
-            $("#loaderTablaMenu").hide();
+            this.loader= 0;
           }
         } else {
           this._ElementService.pi_poVentanaAlertaWarning(respuesta.code, respuesta.msg);
+          this.loader= 0;
         }
       }, error2 => {
-
+        this.loader= 0;
       }
     );
   }
 
   crearUsuario() {
+    this.loader= 1;
     this._UsuarioService.crearUsuario(this.token, this.objUsuario).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
@@ -87,15 +93,18 @@ export class CrearUsuariosComponent implements OnInit {
           this._ElementService.pi_poAlertaSuccess(respuesta.msg,respuesta.code);
           this.limpiarCampos()
           this.listarUsuarios();
+          this.loader= 0;
         } else {
           this._ElementService.pi_poVentanaAlertaWarning(respuesta.code, respuesta.msg);
+          this.loader= 0;
         }
       }, error2 => {
-
+        this.loader= 0;
       }
     )
   }
   actualizarUsuario() {
+    this.loader= 1;
     this._UsuarioService.actualizarUsuario(this.token, this.objUsuario).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
@@ -103,10 +112,13 @@ export class CrearUsuariosComponent implements OnInit {
           this._ElementService.pi_poAlertaSuccess(respuesta.msg,respuesta.code);
           this.limpiarCampos();
           this.listarUsuarios();
+          this.loader= 0;
         } else {
           this._ElementService.pi_poVentanaAlertaWarning(respuesta.code, respuesta.msg);
+          this.loader= 0;
         }
       }, error2 => {
+        this.loader= 0;
 
       }
     )
@@ -120,19 +132,19 @@ export class CrearUsuariosComponent implements OnInit {
       '', '', '', '','','');
   }
   listarRamales() {
-    $("#loaderTablaMenu").show();
+    this.loader= 1;
     this._FacturaService.listarRamales(this.token).subscribe(
       respuesta => {
         this._ElementService.pi_poValidarCodigo(respuesta);
         if (respuesta.status == 'success') {
           this.listRamales = respuesta.data;
           this._ElementService.pi_poAlertaSuccess(respuesta.msg, respuesta.code);
-          $("#loaderTablaMenu").hide();
+          this.loader= 0;
         } else {
-          $("#loaderTablaMenu").hide();
+          this.loader= 0;
         }
       }, error2 => {
-
+        this.loader= 0;
       }
     )
   }

@@ -16,6 +16,13 @@
   <h4 class="sub-title">Código de la factura</h4>
   <input id="codigoFactura" #codigoFactura="ngModel" [(ngModel)]="objregistro_factura.codigo_registro_factura"
          class="form-control" placeholder="201808116984578501" (keydown)="tecla($event)">
+  <div class="row" *ngIf="abono != ''">
+    <div class="col-md-12" style="text-align: center;
+                                  margin-top: 50px;
+                                  color: green;">
+      <h2 style="font-size: 80px">Abono realizado</h2>
+    </div>
+  </div>
   <div *ngIf="objRespuesta != null" style="margin-top: 15px;">
     <div class="row">
       <div class="col-md-12" style="text-align: center">
