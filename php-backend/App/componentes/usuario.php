@@ -225,7 +225,8 @@ $app->post('/seguridad/listarUsuarios', function () use ($app) {
         if ($validacionUsuario == true) {
             $parametros = json_decode($json);
             $conexion = new conexPGSeguridad();
-            $sql = "select usu.*, ro.descripcion_rol from seguridad.usuario usu inner join seguridad.rol ro on usu.id_rol_fk_usuario=ro.id_rol order by id_usuario asc";
+            $sql = "select usu.*, ro.descripcion_rol from seguridad.usuario usu inner join seguridad.rol ro on usu.id_rol_fk_usuario=ro.id_rol 
+WHERE usu.estado_usuario = 'ACTIVO' order by id_usuario asc";
             $r = $conexion->consultaComplejaAso($sql);
             $data = [
                 'code' => 'LTE-001',
@@ -363,8 +364,8 @@ $app->post('/seguridad/filtroUsuario', function () use ($app) {
             $conexion = new conexPGSeguridad();
             $sql = "select usu.*, ro.descripcion_rol from seguridad.usuario usu 
                     inner join seguridad.rol ro on usu.id_rol_fk_usuario=ro.id_rol 
-                    where usu.documento_usuario like '%$filtro%' or usu.nombre_usuario 
-                    like '%$filtro%' or usu.apellido_usuario like '%$filtro%' 
+                    where usu.estado_usuario = 'ACTIVO' and (usu.documento_usuario like '%$filtro%' or usu.nombre_usuario 
+                    like '%$filtro%' or usu.apellido_usuario like '%$filtro%') 
                     order by id_usuario asc";
             $r = $conexion->consultaComplejaAso($sql);
             $data = [

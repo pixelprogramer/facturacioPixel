@@ -200,7 +200,7 @@ $app->post('/administrador/factura/generarFactura', function () use ($app) {
     if ($token != null) {
         $validacionToken = $helper->authCheck($token);
         if ($validacionToken == true) {
-            $sql = "select usu.* from seguridad.usuario usu";
+            $sql = "select usu.* from seguridad.usuario usu where usu.estado_usuario = 'ACTIVO'";
             $usuario = $conexon->consultaComplejaAso($sql);
             $arregloFacturas = array();
             for ($i = 0; $i < count($usuario); $i++) {
@@ -341,15 +341,16 @@ $app->post('/administrador/factura/generarReporteFacturaTodos', function () use 
                             $json = json_encode($arregloDetalle);
                             $sql = "update facturacion.registro_factura set json_cargue_factura='$json' where id_registro_factura = '$id_registro'";
                             $conexon->consultaSimple($sql);
+                           // $fecha_creacion = date('Y-m-d',$registros[0]['fecha_inicial_facturado']);
                             array_push($arregloFactura, [
                                 'documento' => $registros[0]['documento_usuario'],
                                 'nombre' => $registros[0]['nombre_usuario'],
                                 'apellido' => $registros[0]['apellido_usuario'],
                                 'telefono' => $registros[0]['telefono_usuario'],
                                 'direccion' => $registros[0]['direccion_usuario'],
-                                'fecha_inicial' => $registros[0]['fecha_inicial_facturado'],
-                                'fecha_pago' => $registros[0]['fecha_pago_factura'],
-                                'fecha_corte' => $registros[0]['fecha_final_factura'],
+                                'fecha_inicial' => date('Y-m-d',strtotime($registros[0]['fecha_inicial_facturado'])),
+                                'fecha_pago' =>  date('Y-m-d',strtotime($registros[0]['fecha_pago_factura'])),
+                                'fecha_corte' => date('Y-m-d',strtotime($registros[0]['fecha_final_factura'])),
                                 'ramal' => $registros[0]['descripcion_ramal_factura'],
                                 'direccion_entrega' => $registros[0]['direccion_factura'],
                                 'codigo_medidor' => $registros[0]['codigo_medidor_factura'],
@@ -521,10 +522,10 @@ $app->post('/administrador/factura/cargarFacturaCobrar', function () use ($app) 
                         'estado_usuario' => $r['estado_usuario'],
                         'codigo_registro_factura' => $r['codigo_registro_factura'],
                         'codigo_medidor_factura' => $r['codigo_medidor_factura'],
-                        'fecha_creacion_factura' => $r['fecha_creacion_factura'],
-                        'fecha_final_factura' => $r['fecha_final_factura'],
-                        'fecha_inicial_facturado' => $r['fecha_inicial_facturado'],
-                        'fecha_pago_factura' => $r['fecha_pago_factura'],
+                        'fecha_creacion_factura' =>  date('Y-m-d',strtotime($r['fecha_creacion_factura'])),
+                        'fecha_final_factura' => date('Y-m-d',strtotime($r['fecha_final_factura'])),
+                        'fecha_inicial_facturado' => date('Y-m-d',strtotime($r['fecha_inicial_facturado'])),
+                        'fecha_pago_factura' => date('Y-m-d',strtotime($r['fecha_pago_factura'])),
                         'observacion_factura' => $r['observacion_factura'],
                         'entrtrada_recargo' => $entradaRecargo,
                         'msg' => 'La factura con codigo: ' . $codigoIngresado . ' esta como recargo en la factura con codigo: ' . $codigo_registro_factura
@@ -724,26 +725,34 @@ $app->post('/administrador/abono/cargarAbono', function () use ($app) {
     if ($token != null) {
         $validacionToken = $helper->authCheck($token);
         if ($validacionToken == true) {
+
             $json = $app->request->post('json', null);
-            $id_user = $app->request->post('id_user', null);
+            $jsonUsuario = $app->request->post('usuario', null);
+            $total = $app->request->post('total', null);
+
             $parametros = json_decode($json);
+            $usuario = json_decode($jsonUsuario);
             $total_abono_factura = (isset($parametros->total_abono_factura)) ? $parametros->total_abono_factura : null;
             $tipo_abono = (isset($parametros->tipo_abono)) ? $parametros->tipo_abono : null;
+            $id_usuario = (isset($usuario->id_usuario)) ? $usuario->id_usuario : null;
             $fecha_creacion = date('Y-m-d H:i');
+
             $sql = "INSERT INTO facturacion.abonos_factura(
                     total_abono_factura,fecha_creacion_abono_factura, 
                      estado_abono_factura, tipo_abono, id_usuario_fk_abono_factura)
-                    VALUES ( '$total_abono_factura', '$fecha_creacion', 'ACTIVO', '$tipo_abono', '$id_user') returning id_abono_factura;";
+                    VALUES ( '$total_abono_factura', '$fecha_creacion', 'ACTIVO', '$tipo_abono', '$id_usuario') returning id_abono_factura;";
             $r = $conexon->consultaComplejaNorAso($sql);
             $id_abono_factura = $r['id_abono_factura'];
             $fecha_codigo = date('y-m-d');
             $arrayFecha = explode('-', $fecha_codigo);
-            $codigoAbono = 'A-' . $arrayFecha[0] . $arrayFecha[1] . $id_user . $id_abono_factura;
-            $sql = "update facturacion.abonos_factura set codigo_abono_factura = '$codigoAbono' WHERE 
+            $codigoAbono = 'A-' . $arrayFecha[0] . $arrayFecha[1] . $id_usuario . $id_abono_factura;
+            $sql = "update facturacion.abonos_factura set codigo_abono_factura = '$codigoAbono' WHERE
                     id_abono_factura = '$id_abono_factura'";
             $conexon->consultaSimple($sql);
+            $r1 = generarReporteAbono($usuario, $total, $codigoAbono,$total_abono_factura,$fecha_creacion);
             $data = [
-                'code' => 'LTE-001'
+                'code' => 'LTE-001',
+                'data' => $r1
             ];
         } else {
             $data = [
@@ -1060,7 +1069,8 @@ $app->post('/administrador/abono/cargarFacturaValor', function () use ($app) {
             $sql = "select * from facturacion.registro_factura rf 
                     inner join facturacion.factura f on rf.id_factura_registro_factura_fk = f.id_factura
                     where rf.id_usuario_registro_factura_fk = '$id_usuario' and rf.estado_factura = 'SINPAGAR' 
-                    order by rf.fecha_inicial_facturado asc";
+                    order by rf.fecha_inicial_facturado desc";
+
             $r = $conexon->consultaComplejaNorAso($sql);
             if ($r != 0) {
                 if ($r['json_cargue_factura'] != '' && $r['json_cargue_factura'] != null) {
@@ -1286,4 +1296,146 @@ function generarReportePDF($arregloFactura)
 
     $pdf->Output($route . "reporteFactura.pdf", "F");
     return '/pdf/reporteFactura.pdf';
+}
+function generarReporteAbono($usuario, $total, $codigo,$abono,$fecha_cracion)
+{
+
+    $route = __DIR__ . '../../../public/pdf/';
+    $img = __DIR__ . '../../../public/imagenes_estandar/logo25%factura.png';
+    $imgTijera = __DIR__ . '../../../public/imagenes_estandar/tijeras.png';
+    $style = array(
+        'position' => '',
+        'align' => 'C',
+        'stretch' => false,
+        'fitwidth' => true,
+        'cellfitalign' => '',
+        'border' => false,
+        'hpadding' => 'auto',
+        'vpadding' => 'auto',
+        'fgcolor' => array(0, 0, 0),
+        'bgcolor' => false, //array(255,255,255),
+        'text' => true,
+        'font' => 'helvetica',
+        'fontsize' => 6,
+        'stretchtext' => 4
+    );
+    $pdf = new TCPDF('P', 'mm', 'Letter', true, 'UTF-8', false, false);
+    $pdf->setPrintHeader(false);
+    $pdf->setPrintFooter(false);
+    $pdf->AddPage();
+
+
+    $X = 10;
+    $Y = 10;
+    $contadorFacturas = 0;
+
+    $pdf->SetXY($X, $Y);
+    $pdf->Image($img, '', '', 190, 87, '', '', 'T', false, 300, '', false,
+        false, 0, false, false, true);
+    $pdf->SetXY($X, $Y);
+    $pdf->Cell(190, 124, '', 1, 0, '', 0);
+    $pdf->SetXY($X, $Y);
+    $pdf->write1DBarcode($codigo, 'C128', '', '', '', 20, 0.5, $style, 'N');
+    $pdf->SetFont('times', 'B', 16);
+    $pdf->SetTextColor(0, 115, 170);
+    $pdf->SetXY($X, $Y);
+    $pdf->Cell(190, 20, 'ASUACOR', 1, 0, 'C', 0);
+    $pdf->SetX($X);
+    $pdf->SetXY($pdf->GetX(), $pdf->GetY() + 20);
+    $pdf->SetFont('times', 'B', 11);
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->Cell(95, 5, 'Nombres: '.$usuario->nombre_usuario.' '.$usuario->apellido_usuario, 1, 0, '', 0);;
+    $pdf->SetFont('times', 'B', 11);
+    $pdf->Cell(95, 5, 'Cedula: '.$usuario->documento_usuario, 1, 0, '', 0);
+    $pdf->SetXY(105,$pdf->GetY() + 5);
+    $pdf->SetFont('times', 'B', 11);
+    $pdf->Cell(95, 5, 'Telefono: '.$usuario->telefono_usuario, 1, 0, '', 0);
+    $pdf->SetXY(105, $pdf->GetY() + 5);
+    $pdf->SetFont('times', 'B', 11);
+    $pdf->Cell(95, 5, 'Fecha cracion: '.$fecha_cracion, 1, 0, '', 0);
+    $pdf->SetXY(105, $pdf->GetY() + 5);
+    $pdf->SetFont('times', 'B', 14);
+    $pdf->SetTextColor(254, 92, 92);
+    $pdf->Cell(95, 10, 'Total deuda: '.number_format($total,0), 1, 0, '', 0);
+    $pdf->SetXY(105, $pdf->GetY() + 10);
+    $pdf->SetFont('times', 'B', 14);
+    $pdf->SetTextColor(87, 121, 40);
+    $pdf->Cell(95, 10, 'Total abono: '.number_format($abono,0), 1, 0, '', 0);
+    $pdf->SetXY(105, $pdf->GetY() + 10);
+    $pdf->SetFont('times', 'B', 14);
+    $pdf->SetTextColor(255, 27, 45);
+    $pdf->Cell(95, 10, 'Total pendiente: '.number_format($total-$abono,0), 1, 0, '', 0);
+    $pdf->SetXY(10, $pdf->GetY() + 15);
+
+    $pdf->Line($pdf->GetX(), $pdf->GetY(), $pdf->GetX() + 190, $pdf->GetY());
+    $pdf->SetXY($pdf->GetX() + 1, $pdf->GetY() - 3);
+    $pdf->Image($imgTijera, '', '', 3, 3, '', '', 'T', false, 300, '', false,
+        false, 0, false, false, true);
+    $pdf->SetY($pdf->GetY() + 10);
+    $pdf->SetTextColor(0, 115, 170);
+    $pdf->SetFont('times', 'B', 10);
+    $pdf->Cell(190, 5, 'ASUACOR-Desprendible', 1, 1, 'C');
+    $pdf->SetFont('times', 'B', 9);
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->SetXY(10, $pdf->GetY());
+    $pdf->Cell(95, 3, 'Codigo abono: ' . $codigo, 1, 1, 'L');
+    $pdf->SetXY(10, $pdf->GetY());
+    $pdf->Cell(95, 3, 'Nombre: '.$usuario->nombre_usuario.' '.$usuario->apellido_usuario, 1, 1, 'L');
+    $pdf->SetXY(10, $pdf->GetY());
+    $pdf->Cell(95, 3, 'Cedula: '.$usuario->documento_usuario, 1, 1, 'L');
+    $pdf->SetXY(10, $pdf->GetY());
+    $pdf->Cell(95, 3, 'Fecha de creacion: '.$fecha_cracion, 1, 1, 'L');
+    $pdf->SetXY(10, $pdf->GetY());
+    $pdf->SetTextColor(254, 92, 92);
+    $pdf->Cell(95, 3, 'Total deuda: '.number_format($total,0), 1, 1, 'L');
+    $pdf->SetXY(10, $pdf->GetY());
+    $pdf->SetTextColor(87, 121, 40);
+    $pdf->Cell(95, 3, 'Total abono: '.number_format($abono,0), 1, 1, 'L');
+    $pdf->SetXY(10, $pdf->GetY());
+    $pdf->SetTextColor(255, 27, 45);
+    $pdf->Cell(95, 3, 'Total pendiente: '.number_format($total-$abono,0), 1, 1, 'L');
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->SetXY(10, $pdf->GetY());
+    $pdf->Cell(95, 13, '', 1, 0, 'L');
+    $pdf->SetXY(10, $pdf->GetY() + 9);
+    $pdf->SetFont('times', 'B', 5);
+    $pdf->Cell(95, 5, 'ESPACIO PARA SELLO Y FIRMA DEL CAJERO: ', 0, 0, 'C');
+    $pdf->SetXY(100, $pdf->GetY() - 30);
+    $pdf->write1DBarcode($codigo, 'C128', '', '', '', 30, 1.0, $style, 'N');
+
+    /*
+     *
+    $pdf->SetY($pdf->GetY() + 10);
+    $pdf->SetX($pdf->GetX() + 88);
+    $pdf->SetFont('times', 'B', 14);
+    $pdf->SetTextColor(254, 92, 92);
+    $pdf->write1DBarcode($arregloFactura[$i]['codigo_registro_factura'], 'C128', '', '', '', 19, 1.0, $style, 'N');
+    $pdf->SetFont('times', 'B', 8);
+    $pdf->SetTextColor(0, 0, 0);
+    $pdf->SetXY(105, $pdf->GetY() - 5);
+    $pdf->Cell(5, 5, 'Nombre: ' . $arregloFactura[$i]['nombre'] . ' ' . $arregloFactura[$i]['apellido'], 0);
+    $pdf->SetXY(105, $pdf->GetY() + 3);
+    $pdf->Cell(5, 5, 'Total factura: ' . number_format($arregloFactura[$i]['total_pagar_factura'], 0), 0);
+    */
+    //Pintar detalles de la factura
+    $pdf->SetXY($X, $Y + 25);
+    $pdf->SetFont('times', 'B', 8);
+    $pdf->SetTextColor(0, 115, 170);
+    $pdf->Cell(95, 5, 'Detalles', 1, 0, 'C', 0);
+    $pdf->SetXY($X, $Y + 28);
+    $contador = 0;
+    $pdf->SetY($pdf->GetY() + 3);
+    $pdf->Cell(25, 1, 'Producto', 0, 0, 'L', 0);
+    $pdf->SetX($pdf->GetX());
+    $pdf->Cell(15, 1, 'Total', 0, 0, 'L', 0);
+    $pdf->SetX($pdf->GetX());
+    $pdf->Cell(15, 1, 'código factura', 0, 0, 'L', 0);
+    $pdf->SetTextColor(0, 0, 0);
+
+
+    if (!file_exists($route))
+        mkdir($route, 0, true);
+
+    $pdf->Output($route . "reporteAbono.pdf", "F");
+    return '/pdf/reporteAbono.pdf';
 }
