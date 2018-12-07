@@ -71,10 +71,12 @@ export class CobroFacturaComponent implements OnInit {
               if (returned.status == 'success') {
                 this.abono = '1';
                 this.loader = 0;
+                this.objregistro_factura.codigo_registro_factura = '';
               } else {
                 this.abono = '';
                 this._ElementService.pi_poVentanaAlertaWarning(returned.code, returned.msg);
                 this.loader = 0;
+                this.objregistro_factura.codigo_registro_factura = '';
               }
             }, error2 => {
               this.loader = 0;
